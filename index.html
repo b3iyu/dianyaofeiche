@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电摇飞车 - 官方网站</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft Yahei",sans-serif;}
+        body{
+            background:linear-gradient(135deg,#1a1a2e,#16213e);
+            color:#fff;
+            min-height:100vh;
+        }
+        header{
+            background:rgba(0,0,0,0.6);
+            padding:15px 30px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        .logo{
+            font-size:28px;
+            font-weight:bold;
+            color:#ffcc00;
+        }
+        .nav a{
+            color:#fff;
+            text-decoration:none;
+            margin:0 12px;
+            font-size:16px;
+            cursor:pointer;
+        }
+        .nav a:hover{color:#ffcc00;}
+        .container{
+            max-width:1400px;
+            margin:40px auto;
+            padding:0 20px;
+        }
+
+        /* 首页 */
+        .home-box{
+            text-align:center;
+            margin:80px 0 50px;
+        }
+        .home-box h1{
+            font-size:56px;
+            color:#ffcc00;
+            margin-bottom:20px;
+        }
+        .home-box p{font-size:20px;opacity:0.9;}
+        .btn-group{margin-top:30px;}
+        .btn{
+            padding:12px 30px;
+            background:#ffcc00;
+            color:#000;
+            border:none;
+            border-radius:8px;
+            font-size:17px;
+            cursor:pointer;
+            text-decoration:none;
+            display:inline-block;
+            margin:0 8px;
+        }
+        .btn:hover{background:#ffdd44;}
+        .btn-sm{
+            padding:6px 14px;
+            font-size:14px;
+            margin:0 4px;
+        }
+        .btn-danger{
+            background:#ff6b6b;
+            color:#fff;
+        }
+        .btn-danger:hover{background:#ff8585;}
+
+        /* 登录注册框 */
+        .login-box,.register-box{
+            max-width:420px;
+            margin:60px auto;
+            background:rgba(255,255,255,0.08);
+            padding:35px;
+            border-radius:12px;
+            display:none;
+        }
+        .login-box h2,.register-box h2{
+            text-align:center;
+            margin-bottom:25px;
+            color:#ffcc00;
+        }
+        input,select,textarea{
+            width:100%;
+            padding:12px;
+            margin:10px 0;
+            border-radius:6px;
+            border:none;
+            font-size:16px;
+            outline:none;
+            background:#fff;
+            color:#333;
+        }
+        textarea{
+            resize:vertical;
+            min-height:80px;
+            font-family:inherit;
+        }
+        .pwd-tip{
+            font-size:12px;
+            color:#aaa;
+            margin:5px 0 15px;
+            line-height:1.5;
+        }
+        .submit-btn{
+            width:100%;
+            margin-top:15px;
+            background:#ffcc00;
+            border:none;
+            padding:12px;
+            border-radius:6px;
+            font-weight:bold;
+            cursor:pointer;
+            font-size:16px;
+        }
+        .submit-btn:hover{background:#ffdd44;}
+        .tip{margin-top:15px;text-align:center;cursor:pointer;color:#ffcc00;}
+        .error-tip{
+            color:#ff6b6b;
+            font-size:13px;
+            text-align:center;
+            margin-top:10px;
+            min-height:18px;
+        }
+
+        /* 普通用户主页 */
+        .user-panel{
+            display:none;
+        }
+        .user-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:30px;
+        }
+        .user-header h2{color:#ffcc00;}
+        .user-menu{
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr;
+            gap:20px;
+            margin-bottom:30px;
+        }
+        .menu-card{
+            background:rgba(255,255,255,0.08);
+            padding:30px;
+            border-radius:12px;
+            text-align:center;
+            cursor:pointer;
+            transition:0.3s;
+        }
+        .menu-card:hover{
+            background:rgba(255,204,0,0.2);
+            transform:translateY(-3px);
+        }
+        .menu-card h3{margin-bottom:10px;font-size:22px;}
+        .menu-card p{opacity:0.8;font-size:14px;}
+
+        /* 公告栏 */
+        .notice-box{
+            background:rgba(255,255,255,0.08);
+            padding:25px;
+            border-radius:12px;
+            margin-bottom:30px;
+        }
+        .notice-box h3{
+            color:#ffcc00;
+            margin-bottom:15px;
+            border-bottom:1px solid rgba(255,204,0,0.3);
+            padding-bottom:10px;
+        }
+        .notice-item{
+            padding:8px 0;
+            border-bottom:1px dashed rgba(255,255,255,0.1);
+        }
+        .notice-item:last-child{border-bottom:none;}
+
+        /* 站点选择 */
+        .station-page,.ticket-page,.buy-page,.order-success-page,.my-order-page{
+            display:none;
+            background:rgba(255,255,255,0.08);
+            padding:30px;
+            border-radius:12px;
+            margin-top:20px;
+        }
+        .page-title{
+            color:#ffcc00;
+            margin-bottom:20px;
+            font-size:24px;
+        }
+        .station-list{
+            display:grid;
+            gap:15px;
+        }
+        .station-item{
+            padding:20px;
+            border-radius:8px;
+            background:rgba(255,255,255,0.1);
+            cursor:pointer;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        .station-item:hover:not(.disabled){
+            background:rgba(255,204,0,0.2);
+        }
+        .station-item.disabled{
+            background:#333;
+            color:#888;
+            cursor:not-allowed;
+        }
+        .status-tag{
+            font-size:12px;
+            padding:4px 10px;
+            border-radius:20px;
+        }
+        .status-close{background:#555;color:#aaa;}
+        .status-open{background:#2ecc71;color:#fff;}
+
+        /* 票种选择 */
+        .ticket-list{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:20px;
+        }
+        .ticket-item{
+            padding:35px 20px;
+            text-align:center;
+            background:rgba(255,255,255,0.1);
+            border-radius:10px;
+            cursor:pointer;
+            transition:0.3s;
+        }
+        .ticket-item:hover{
+            background:rgba(255,204,0,0.2);
+            transform:scale(1.03);
+        }
+        .ticket-item h4{
+            font-size:22px;
+            margin-bottom:10px;
+            color:#ffcc00;
+        }
+
+        /* 购票填写 */
+        .buy-form{
+            max-width:500px;
+            margin:0 auto;
+        }
+        .buy-info{
+            background:rgba(0,0,0,0.2);
+            padding:15px;
+            border-radius:8px;
+            margin-bottom:20px;
+        }
+        .buy-info p{margin:5px 0;}
+
+        /* 订单成功 */
+        .order-success{
+            text-align:center;
+            padding:20px;
+        }
+        .order-no{
+            font-size:24px;
+            color:#ffcc00;
+            font-weight:bold;
+            margin:15px 0;
+            letter-spacing:2px;
+        }
+
+        /* 我的订单 */
+        .order-table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:15px;
+        }
+        .order-table th,.order-table td{
+            padding:12px;
+            text-align:left;
+            border-bottom:1px solid rgba(255,255,255,0.1);
+        }
+        .order-table th{
+            color:#ffcc00;
+            background:rgba(0,0,0,0.2);
+        }
+        .empty-tip{
+            text-align:center;
+            color:#888;
+            padding:30px;
+        }
+
+        /* 管理员后台 */
+        .admin-panel{
+            display:none;
+        }
+        .admin-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:30px;
+        }
+        .admin-header h2{color:#ffcc00;}
+        .admin-menu{
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr;
+            gap:20px;
+            margin-bottom:30px;
+        }
+        .order-list-page,.notice-manage-page{
+            display:none;
+            background:rgba(255,255,255,0.08);
+            padding:30px;
+            border-radius:12px;
+            margin-top:20px;
+        }
+        .notice-item-manage{
+            background:rgba(0,0,0,0.2);
+            padding:15px;
+            border-radius:8px;
+            margin-bottom:10px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        .notice-content{
+            flex:1;
+        }
+        .notice-actions{
+            display:flex;
+            gap:8px;
+        }
+        .add-notice-box{
+            background:rgba(0,0,0,0.2);
+            padding:20px;
+            border-radius:8px;
+            margin-bottom:20px;
+        }
+        .add-notice-box h4{
+            margin-bottom:10px;
+            color:#ffcc00;
+        }
+        .add-row{
+            display:flex;
+            gap:10px;
+            align-items:center;
+        }
+        .add-row input{
+            flex:1;
+            margin:0;
+        }
+
+        .back-btn{
+            background:transparent;
+            border:1px solid #ffcc00;
+            color:#ffcc00;
+            padding:8px 18px;
+            border-radius:6px;
+            cursor:pointer;
+            margin-bottom:15px;
+        }
+        .back-btn:hover{background:rgba(255,204,0,0.1);}
+
+        .logout-btn{
+            background:transparent;
+            border:1px solid #ff6b6b;
+            color:#ff6b6b;
+            padding:8px 18px;
+            border-radius:6px;
+            cursor:pointer;
+        }
+        .logout-btn:hover{background:rgba(255,107,107,0.1);}
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo" style="display:flex; align-items:center; gap:10px;">
+    <img src="dy.png" alt="电摇飞车" style="height: 32px; display:block;">
+    <span style="color:#ffffff; font-size:18px; font-weight:500;">幸福市民</span>
+</div>
+
+    <div class="nav">
+        <a onclick="showHome()">首页</a>
+        <a onclick="showLogin()">登录</a>
+        <a onclick="showRegister()">注册</a>
+    </div>
+</header>
+
+<div class="container">
+    <!-- 首页 -->
+    <div id="home" class="home-box">
+        <h1>电摇飞车</h1>
+        <p>超刺激竞速游戏官方网站</p>
+        <div class="btn-group">
+            <a class="btn" onclick="showLogin()">立即登录</a>
+            <a class="btn" onclick="showRegister()">账号注册</a>
+        </div>
+        <div class="notice-box" style="max-width:600px;margin:50px auto 0;text-align:left;">
+            <h3>📢 最新公告</h3>
+            <div id="homeNoticeList"></div>
+        </div>
+    </div>
+
+    <!-- 登录框 -->
+    <div id="login" class="login-box">
+        <h2>账号登录</h2>
+        <input type="text" id="loginUser" placeholder="输入用户名">
+        <input type="password" id="loginPwd" placeholder="输入密码">
+        <div class="error-tip" id="loginError"></div>
+        <button class="submit-btn" onclick="login()">登录</button>
+        <div class="tip" onclick="showRegister()">没有账号？去注册</div>
+    </div>
+
+    <!-- 注册框 -->
+    <div id="register" class="register-box">
+        <h2>新用户注册</h2>
+        <input type="text" id="regUser" placeholder="设置用户名">
+        <input type="password" id="regPwd" placeholder="设置密码">
+        <div class="pwd-tip">密码要求：不少于8位，必须包含大写字母、小写字母和特殊字符（如!@#$%^&*）</div>
+        <select id="regRole">
+            <option value="user">普通用户</option>
+        </select>
+        <div class="error-tip" id="regError"></div>
+        <button class="submit-btn" onclick="register()">完成注册</button>
+        <div class="tip" onclick="showLogin()">已有账号？去登录</div>
+    </div>
+
+    <!-- 普通用户主页 -->
+    <div id="userPage" class="user-panel">
+        <div class="user-header">
+            <h2>🚗 玩家中心</h2>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+
+        <div class="notice-box">
+            <h3>📢 最新公告</h3>
+            <div id="userNoticeList"></div>
+        </div>
+
+        <div class="user-menu">
+            <div class="menu-card" onclick="showStationPage()">
+                <h3>🎫 在线购票</h3>
+                <p>选择站点和票种，快速下单</p>
+            </div>
+            <div class="menu-card" onclick="showMyOrder()">
+                <h3>📦 我的订单</h3>
+                <p>查看历史购票记录</p>
+            </div>
+            <div class="menu-card" onclick="alert('功能开发中，敬请期待')">
+                <h3>👤 个人信息</h3>
+                <p>修改账号资料</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 站点选择页 -->
+    <div id="stationPage" class="station-page">
+        <button class="back-btn" onclick="backToUser()">← 返回</button>
+        <h3 class="page-title">选择乘车站点</h3>
+        <div class="station-list">
+            <div class="station-item disabled">
+                <span>公园路小学(本)</span>
+                <span class="status-tag status-close">已停业</span>
+            </div>
+            <div class="station-item" onclick="showTicketPage()">
+                <span>公园路小学(东)</span>
+                <span class="status-tag status-open">正常营业</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 票种选择页 -->
+    <div id="ticketPage" class="ticket-page">
+        <button class="back-btn" onclick="showStationPage()">← 返回站点</button>
+        <h3 class="page-title">选择票种 - 公园路小学(东)</h3>
+        <div class="ticket-list">
+            <div class="ticket-item" onclick="showBuyPage('中午票')">
+                <h4>中午票</h4>
+                <p>当日中午场次使用</p>
+            </div>
+            <div class="ticket-item" onclick="showBuyPage('1日票')">
+                <h4>1日票</h4>
+                <p>全天任意场次畅玩</p>
+            </div>
+            <div class="ticket-item" onclick="showBuyPage('1月票')">
+                <h4>1月票</h4>
+                <p>整月不限次数畅玩</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 购票填写页 -->
+    <div id="buyPage" class="buy-page">
+        <button class="back-btn" onclick="showTicketPage()">← 返回票种</button>
+        <div class="buy-form">
+            <h3 class="page-title" style="text-align:center;">填写购票信息</h3>
+            <div class="buy-info">
+                <p>站点：公园路小学(东)</p>
+                <p>票种：<span id="selectedTicket"></span></p>
+            </div>
+            <input type="text" id="buyerName" placeholder="请输入您的姓名">
+            <button class="submit-btn" onclick="submitOrder()">提交订单</button>
+        </div>
+    </div>
+
+    <!-- 订单成功页 -->
+    <div id="orderSuccess" class="order-success-page">
+        <div class="order-success">
+            <h3 style="color:#2ecc71;">✅ 购票成功！</h3>
+            <p>您的订单号：</p>
+            <div class="order-no" id="orderNo"></div>
+            <p>请妥善保管订单号，到站出示即可</p>
+            <button class="btn" style="margin-top:20px;" onclick="backToUser()">返回中心</button>
+        </div>
+    </div>
+
+    <!-- 我的订单页 -->
+    <div id="myOrderPage" class="my-order-page">
+        <button class="back-btn" onclick="backToUser()">← 返回</button>
+        <h3 class="page-title">我的购票订单</h3>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>票种</th>
+                    <th>姓名</th>
+                    <th>订单号</th>
+                    <th>购票站点</th>
+                    <th>下单时间</th>
+                </tr>
+            </thead>
+            <tbody id="myOrderBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 管理员主页 -->
+    <div id="adminPage" class="admin-panel">
+        <div class="admin-header">
+            <h2>👑 管理员控制面板</h2>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+
+        <div class="admin-menu">
+            <div class="menu-card" onclick="showOrderList()">
+                <h3>📋 预定管理</h3>
+                <p>查看所有用户购票订单</p>
+            </div>
+            <div class="menu-card" onclick="showNoticeManage()">
+                <h3>📢 公告管理</h3>
+                <p>发布、编辑、删除网站公告</p>
+            </div>
+            <div class="menu-card" onclick="alert('功能开发中')">
+                <h3>⚙️ 系统设置</h3>
+                <p>站点和票种配置</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理员订单列表 -->
+    <div id="orderListPage" class="order-list-page">
+        <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
+        <h3 class="page-title">全部预定订单</h3>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>票种</th>
+                    <th>姓名</th>
+                    <th>订单号</th>
+                    <th>购票站点</th>
+                    <th>下单账号</th>
+                    <th>下单时间</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 管理员公告管理 -->
+    <div id="noticeManagePage" class="notice-manage-page">
+        <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
+        <h3 class="page-title">公告管理</h3>
+        
+        <div class="add-notice-box">
+            <h4>发布新公告</h4>
+            <div class="add-row">
+                <input type="text" id="newNoticeContent" placeholder="输入公告内容">
+                <button class="btn" onclick="addNotice()">发布</button>
+            </div>
+        </div>
+
+        <div id="noticeManageList"></div>
+    </div>
+</div>
+
+<script>
+// 页面加载初始化
+window.onload = function(){
+    initAdminAccount();
+    initNoticeData();
+    renderHomeNotice();
+}
+
+// 本地存储数据
+let userList = JSON.parse(localStorage.getItem("dyfcUser")) || [];
+let orderList = JSON.parse(localStorage.getItem("dyfcOrder")) || [];
+let noticeList = JSON.parse(localStorage.getItem("dyfcNotice")) || [];
+let currentTicketType = "";
+let currentUser = "";
+
+// ========== 初始化数据 ==========
+function initAdminAccount(){
+    const hasAdmin = userList.some(u => u.username === "幸福市民");
+    if(!hasAdmin){
+        userList.push({
+            username:"幸福市民",
+            password:"xingfushimin",
+            role:"admin"
+        });
+        saveUser();
+    }
+}
+
+function initNoticeData(){
+    if(noticeList.length === 0){
+        noticeList = [
+            {id:1, content:"公园路小学(本)站点即日起暂停营业，恢复时间另行通知"},
+            {id:2, content:"公园路小学(东)站点正常运营，新增月票优惠活动"},
+            {id:3, content:"电摇飞车联赛将于下月开启，敬请期待"}
+        ];
+        saveNotice();
+    }
+}
+
+function saveUser(){
+    localStorage.setItem("dyfcUser", JSON.stringify(userList));
+}
+function saveOrder(){
+    localStorage.setItem("dyfcOrder", JSON.stringify(orderList));
+}
+function saveNotice(){
+    localStorage.setItem("dyfcNotice", JSON.stringify(noticeList));
+    renderHomeNotice();
+    renderUserNotice();
+}
+
+// ========== 页面切换 ==========
+function hideAll(){
+    document.getElementById("home").style.display = "none";
+    document.getElementById("login").style.display = "none";
+    document.getElementById("register").style.display = "none";
+    document.getElementById("userPage").style.display = "none";
+    document.getElementById("stationPage").style.display = "none";
+    document.getElementById("ticketPage").style.display = "none";
+    document.getElementById("buyPage").style.display = "none";
+    document.getElementById("orderSuccess").style.display = "none";
+    document.getElementById("myOrderPage").style.display = "none";
+    document.getElementById("adminPage").style.display = "none";
+    document.getElementById("orderListPage").style.display = "none";
+    document.getElementById("noticeManagePage").style.display = "none";
+    
+    document.getElementById("loginError").innerText = "";
+    document.getElementById("regError").innerText = "";
+}
+
+function showHome(){
+    hideAll();
+    document.getElementById("home").style.display = "block";
+    renderHomeNotice();
+}
+function showLogin(){hideAll();document.getElementById("login").style.display="block";}
+function showRegister(){hideAll();document.getElementById("register").style.display="block";}
+
+// ========== 公告渲染 ==========
+function renderHomeNotice(){
+    const box = document.getElementById("homeNoticeList");
+    if(!box) return;
+    box.innerHTML = "";
+    noticeList.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "notice-item";
+        div.innerText = "• " + item.content;
+        box.appendChild(div);
+    });
+}
+
+function renderUserNotice(){
+    const box = document.getElementById("userNoticeList");
+    if(!box) return;
+    box.innerHTML = "";
+    noticeList.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "notice-item";
+        div.innerText = "• " + item.content;
+        box.appendChild(div);
+    });
+}
+
+// ========== 注册登录 ==========
+function checkPwdStrong(pwd){
+    const reg = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]).{8,}$/;
+    return reg.test(pwd);
+}
+
+function register(){
+    let name = document.getElementById("regUser").value.trim();
+    let pass = document.getElementById("regPwd").value.trim();
+    let role = document.getElementById("regRole").value;
+    let errorTip = document.getElementById("regError");
+    
+    if(!name || !pass){
+        errorTip.innerText = "用户名和密码不能为空";
+        return;
+    }
+    if(!checkPwdStrong(pass)){
+        errorTip.innerText = "密码不符合要求：需包含大写+小写+特殊字符，至少8位";
+        return;
+    }
+    if(userList.find(u=>u.username === name)){
+        errorTip.innerText = "该用户名已被注册";
+        return;
+    }
+    
+    userList.push({username:name, password:pass, role:role});
+    saveUser();
+    alert("注册成功！请登录");
+    showLogin();
+}
+
+function login(){
+    let name = document.getElementById("loginUser").value.trim();
+    let pass = document.getElementById("loginPwd").value.trim();
+    let errorTip = document.getElementById("loginError");
+    
+    if(!name || !pass){
+        errorTip.innerText = "请输入用户名和密码";
+        return;
+    }
+    
+    let findUser = userList.find(u=>u.username === name && u.password === pass);
+    
+    if(!findUser){
+        errorTip.innerText = "用户名或密码错误，请检查后重试";
+        return;
+    }
+    
+    currentUser = name;
+    hideAll();
+    
+    if(findUser.role === "admin"){
+        document.getElementById("adminPage").style.display = "block";
+    }else{
+        document.getElementById("userPage").style.display = "block";
+        renderUserNotice();
+    }
+}
+
+function logout(){
+    currentUser = "";
+    showHome();
+}
+
+// ========== 用户端购票流程 ==========
+function showStationPage(){
+    hideAll();
+    document.getElementById("userPage").style.display = "block";
+    document.getElementById("stationPage").style.display = "block";
+}
+
+function showTicketPage(){
+    hideAll();
+    document.getElementById("userPage").style.display = "block";
+    document.getElementById("ticketPage").style.display = "block";
+}
+
+function showBuyPage(ticket){
+    currentTicketType = ticket;
+    document.getElementById("selectedTicket").innerText = ticket;
+    hideAll();
+    document.getElementById("userPage").style.display = "block";
+    document.getElementById("buyPage").style.display = "block";
+}
+
+function submitOrder(){
+    let name = document.getElementById("buyerName").value.trim();
+    if(!name){
+        alert("请输入姓名");
+        return;
+    }
+    
+    let orderNo = "DYFC" + Date.now().toString().slice(-6) + Math.floor(Math.random()*1000).toString().padStart(3,'0');
+    
+    let order = {
+        name: name,
+        ticket: currentTicketType,
+        station: "公园路小学(东)",
+        orderNo: orderNo,
+        username: currentUser,
+        time: new Date().toLocaleString()
+    };
+    
+    orderList.push(order);
+    saveOrder();
+    
+    document.getElementById("orderNo").innerText = orderNo;
+    hideAll();
+    document.getElementById("userPage").style.display = "block";
+    document.getElementById("orderSuccess").style.display = "block";
+    
+    document.getElementById("buyerName").value = "";
+}
+
+function showMyOrder(){
+    renderMyOrder();
+    hideAll();
+    document.getElementById("userPage").style.display = "block";
+    document.getElementById("myOrderPage").style.display = "block";
+}
+
+function renderMyOrder(){
+    const tbody = document.getElementById("myOrderBody");
+    const myOrders = orderList.filter(o => o.username === currentUser);
+    
+    if(myOrders.length === 0){
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无购票记录</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = "";
+    myOrders.slice().reverse().forEach(order => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${order.ticket}</td>
+            <td>${order.name}</td>
+            <td>${order.orderNo}</td>
+            <td>${order.station}</td>
+            <td>${order.time}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function backToUser(){
+    hideAll();
+    document.getElementById("userPage").style.display = "block";
+}
+
+// ========== 管理员端 ==========
+function showOrderList(){
+    renderOrderTable();
+    hideAll();
+    document.getElementById("adminPage").style.display = "block";
+    document.getElementById("orderListPage").style.display = "block";
+}
+
+function renderOrderTable(){
+    let tbody = document.getElementById("orderTableBody");
+    tbody.innerHTML = "";
+    
+    if(orderList.length === 0){
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无订单</td></tr>';
+        return;
+    }
+    
+    orderList.slice().reverse().forEach(order => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${order.ticket}</td>
+            <td>${order.name}</td>
+            <td>${order.orderNo}</td>
+            <td>${order.station}</td>
+            <td>${order.username || '未登录'}</td>
+            <td>${order.time}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function showNoticeManage(){
+    renderNoticeManage();
+    hideAll();
+    document.getElementById("adminPage").style.display = "block";
+    document.getElementById("noticeManagePage").style.display = "block";
+}
+
+function renderNoticeManage(){
+    const box = document.getElementById("noticeManageList");
+    box.innerHTML = "";
+    
+    noticeList.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "notice-item-manage";
+        div.innerHTML = `
+            <div class="notice-content">${item.content}</div>
+            <div class="notice-actions">
+                <button class="btn btn-sm" onclick="editNotice(${item.id})">编辑</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteNotice(${item.id})">删除</button>
+            </div>
+        `;
+        box.appendChild(div);
+    });
+}
+
+function addNotice(){
+    const input = document.getElementById("newNoticeContent");
+    const content = input.value.trim();
+    if(!content){
+        alert("请输入公告内容");
+        return;
+    }
+    
+    const newId = noticeList.length > 0 ? Math.max(...noticeList.map(n=>n.id)) + 1 : 1;
+    noticeList.push({id: newId, content: content});
+    saveNotice();
+    renderNoticeManage();
+    input.value = "";
+}
+
+function editNotice(id){
+    const notice = noticeList.find(n => n.id === id);
+    if(!notice) return;
+    
+    const newContent = prompt("编辑公告内容：", notice.content);
+    if(newContent === null || newContent.trim() === "") return;
+    
+    notice.content = newContent.trim();
+    saveNotice();
+    renderNoticeManage();
+}
+
+function deleteNotice(id){
+    if(!confirm("确定删除这条公告吗？")) return;
+    noticeList = noticeList.filter(n => n.id !== id);
+    saveNotice();
+    renderNoticeManage();
+}
+
+function backToAdmin(){
+    hideAll();
+    document.getElementById("adminPage").style.display = "block";
+}
+</script>
+</body>
+</html>
