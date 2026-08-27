@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电摇飞车 - 官方网站</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft Yahei",sans-serif;}
         body{
@@ -36,8 +37,6 @@
             margin:40px auto;
             padding:0 20px;
         }
-
-        /* 首页 */
         .home-box{
             text-align:center;
             margin:80px 0 50px;
@@ -72,8 +71,6 @@
             color:#fff;
         }
         .btn-danger:hover{background:#ff8585;}
-
-        /* 登录注册框 */
         .login-box,.register-box{
             max-width:420px;
             margin:60px auto;
@@ -103,24 +100,6 @@
             min-height:80px;
             font-family:inherit;
         }
-        .pwd-tip{
-            font-size:12px;
-            color:#aaa;
-            margin:5px 0 15px;
-            line-height:1.5;
-        }
-        .submit-btn{
-            width:100%;
-            margin-top:15px;
-            background:#ffcc00;
-            border:none;
-            padding:12px;
-            border-radius:6px;
-            font-weight:bold;
-            cursor:pointer;
-            font-size:16px;
-        }
-        .submit-btn:hover{background:#ffdd44;}
         .tip{margin-top:15px;text-align:center;cursor:pointer;color:#ffcc00;}
         .error-tip{
             color:#ff6b6b;
@@ -129,11 +108,7 @@
             margin-top:10px;
             min-height:18px;
         }
-
-        /* 普通用户主页 */
-        .user-panel{
-            display:none;
-        }
+        .user-panel{display:none;}
         .user-header{
             display:flex;
             justify-content:space-between;
@@ -161,8 +136,6 @@
         }
         .menu-card h3{margin-bottom:10px;font-size:22px;}
         .menu-card p{opacity:0.8;font-size:14px;}
-
-        /* 公告栏 */
         .notice-box{
             background:rgba(255,255,255,0.08);
             padding:25px;
@@ -180,8 +153,6 @@
             border-bottom:1px dashed rgba(255,255,255,0.1);
         }
         .notice-item:last-child{border-bottom:none;}
-
-        /* 站点选择 */
         .station-page,.ticket-page,.buy-page,.order-success-page,.my-order-page{
             display:none;
             background:rgba(255,255,255,0.08);
@@ -194,10 +165,7 @@
             margin-bottom:20px;
             font-size:24px;
         }
-        .station-list{
-            display:grid;
-            gap:15px;
-        }
+        .station-list{display:grid;gap:15px;}
         .station-item{
             padding:20px;
             border-radius:8px;
@@ -222,8 +190,6 @@
         }
         .status-close{background:#555;color:#aaa;}
         .status-open{background:#2ecc71;color:#fff;}
-
-        /* 票种选择 */
         .ticket-list{
             display:grid;
             grid-template-columns:repeat(3,1fr);
@@ -246,12 +212,7 @@
             margin-bottom:10px;
             color:#ffcc00;
         }
-
-        /* 购票填写 */
-        .buy-form{
-            max-width:500px;
-            margin:0 auto;
-        }
+        .buy-form{max-width:500px;margin:0 auto;}
         .buy-info{
             background:rgba(0,0,0,0.2);
             padding:15px;
@@ -259,12 +220,7 @@
             margin-bottom:20px;
         }
         .buy-info p{margin:5px 0;}
-
-        /* 订单成功 */
-        .order-success{
-            text-align:center;
-            padding:20px;
-        }
+        .order-success{text-align:center;padding:20px;}
         .order-no{
             font-size:24px;
             color:#ffcc00;
@@ -272,8 +228,6 @@
             margin:15px 0;
             letter-spacing:2px;
         }
-
-        /* 我的订单 */
         .order-table{
             width:100%;
             border-collapse:collapse;
@@ -293,11 +247,7 @@
             color:#888;
             padding:30px;
         }
-
-        /* 管理员后台 */
-        .admin-panel{
-            display:none;
-        }
+        .admin-panel{display:none;}
         .admin-header{
             display:flex;
             justify-content:space-between;
@@ -327,13 +277,8 @@
             justify-content:space-between;
             align-items:center;
         }
-        .notice-content{
-            flex:1;
-        }
-        .notice-actions{
-            display:flex;
-            gap:8px;
-        }
+        .notice-content{flex:1;}
+        .notice-actions{display:flex;gap:8px;}
         .add-notice-box{
             background:rgba(0,0,0,0.2);
             padding:20px;
@@ -349,11 +294,7 @@
             gap:10px;
             align-items:center;
         }
-        .add-row input{
-            flex:1;
-            margin:0;
-        }
-
+        .add-row input{flex:1;margin:0;}
         .back-btn{
             background:transparent;
             border:1px solid #ffcc00;
@@ -364,7 +305,6 @@
             margin-bottom:15px;
         }
         .back-btn:hover{background:rgba(255,204,0,0.1);}
-
         .logout-btn{
             background:transparent;
             border:1px solid #ff6b6b;
@@ -378,20 +318,14 @@
 </head>
 <body>
 <header>
-    <div class="logo" style="display:flex; align-items:center; gap:10px;">
-    <img src="dy.png" alt="电摇飞车" style="height: 32px; display:block;">
-    <span style="color:#ffffff; font-size:18px; font-weight:500;">电摇飞车</span>
-</div>
-
+    <div class="logo">🏎️ 电摇飞车</div>
     <div class="nav">
         <a onclick="showHome()">首页</a>
         <a onclick="showLogin()">登录</a>
         <a onclick="showRegister()">注册</a>
     </div>
 </header>
-
 <div class="container">
-    <!-- 首页 -->
     <div id="home" class="home-box">
         <h1>电摇飞车</h1>
         <p>超刺激竞速游戏官方网站</p>
@@ -405,42 +339,34 @@
         </div>
     </div>
 
-    <!-- 登录框 -->
     <div id="login" class="login-box">
-        <h2>账号登录</h2>
-        <input type="text" id="loginUser" placeholder="输入用户名">
+        <h2>账号登录（邮箱）</h2>
+        <input type="email" id="loginEmail" placeholder="输入邮箱">
         <input type="password" id="loginPwd" placeholder="输入密码">
         <div class="error-tip" id="loginError"></div>
         <button class="submit-btn" onclick="login()">登录</button>
         <div class="tip" onclick="showRegister()">没有账号？去注册</div>
     </div>
 
-    <!-- 注册框 -->
     <div id="register" class="register-box">
         <h2>新用户注册</h2>
-        <input type="text" id="regUser" placeholder="设置用户名">
+        <input type="text" id="regUsername" placeholder="设置昵称">
+        <input type="email" id="regEmail" placeholder="邮箱">
         <input type="password" id="regPwd" placeholder="设置密码">
-        <div class="pwd-tip">密码要求：不少于8位，必须包含大写字母、小写字母和特殊字符（如!@#$%^&*）</div>
-        <select id="regRole">
-            <option value="user">普通用户</option>
-        </select>
         <div class="error-tip" id="regError"></div>
         <button class="submit-btn" onclick="register()">完成注册</button>
         <div class="tip" onclick="showLogin()">已有账号？去登录</div>
     </div>
 
-    <!-- 普通用户主页 -->
     <div id="userPage" class="user-panel">
         <div class="user-header">
             <h2>🚗 玩家中心</h2>
             <button class="logout-btn" onclick="logout()">退出登录</button>
         </div>
-
         <div class="notice-box">
             <h3>📢 最新公告</h3>
             <div id="userNoticeList"></div>
         </div>
-
         <div class="user-menu">
             <div class="menu-card" onclick="showStationPage()">
                 <h3>🎫 在线购票</h3>
@@ -457,7 +383,6 @@
         </div>
     </div>
 
-    <!-- 站点选择页 -->
     <div id="stationPage" class="station-page">
         <button class="back-btn" onclick="backToUser()">← 返回</button>
         <h3 class="page-title">选择乘车站点</h3>
@@ -473,7 +398,6 @@
         </div>
     </div>
 
-    <!-- 票种选择页 -->
     <div id="ticketPage" class="ticket-page">
         <button class="back-btn" onclick="showStationPage()">← 返回站点</button>
         <h3 class="page-title">选择票种 - 公园路小学(东)</h3>
@@ -493,7 +417,6 @@
         </div>
     </div>
 
-    <!-- 购票填写页 -->
     <div id="buyPage" class="buy-page">
         <button class="back-btn" onclick="showTicketPage()">← 返回票种</button>
         <div class="buy-form">
@@ -507,7 +430,6 @@
         </div>
     </div>
 
-    <!-- 订单成功页 -->
     <div id="orderSuccess" class="order-success-page">
         <div class="order-success">
             <h3 style="color:#2ecc71;">✅ 购票成功！</h3>
@@ -518,7 +440,6 @@
         </div>
     </div>
 
-    <!-- 我的订单页 -->
     <div id="myOrderPage" class="my-order-page">
         <button class="back-btn" onclick="backToUser()">← 返回</button>
         <h3 class="page-title">我的购票订单</h3>
@@ -536,13 +457,11 @@
         </table>
     </div>
 
-    <!-- 管理员主页 -->
     <div id="adminPage" class="admin-panel">
         <div class="admin-header">
             <h2>👑 管理员控制面板</h2>
             <button class="logout-btn" onclick="logout()">退出登录</button>
         </div>
-
         <div class="admin-menu">
             <div class="menu-card" onclick="showOrderList()">
                 <h3>📋 预定管理</h3>
@@ -559,7 +478,6 @@
         </div>
     </div>
 
-    <!-- 管理员订单列表 -->
     <div id="orderListPage" class="order-list-page">
         <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
         <h3 class="page-title">全部预定订单</h3>
@@ -578,11 +496,9 @@
         </table>
     </div>
 
-    <!-- 管理员公告管理 -->
     <div id="noticeManagePage" class="notice-manage-page">
         <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
         <h3 class="page-title">公告管理</h3>
-        
         <div class="add-notice-box">
             <h4>发布新公告</h4>
             <div class="add-row">
@@ -590,63 +506,38 @@
                 <button class="btn" onclick="addNotice()">发布</button>
             </div>
         </div>
-
         <div id="noticeManageList"></div>
     </div>
 </div>
 
 <script>
-// 页面加载初始化
-window.onload = function(){
-    initAdminAccount();
-    initNoticeData();
-    renderHomeNotice();
-}
+// ============ Supabase配置 ============
+const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 本地存储数据
-let userList = JSON.parse(localStorage.getItem("dyfcUser")) || [];
-let orderList = JSON.parse(localStorage.getItem("dyfcOrder")) || [];
-let noticeList = JSON.parse(localStorage.getItem("dyfcNotice")) || [];
 let currentTicketType = "";
-let currentUser = "";
+let currentUserId = null;
+let currentUsername = "";
+let currentRole = "user";
 
-// ========== 初始化数据 ==========
-function initAdminAccount(){
-    const hasAdmin = userList.some(u => u.username === "幸福市民");
-    if(!hasAdmin){
-        userList.push({
-            username:"幸福市民",
-            password:"xingfushimin",
-            role:"admin"
-        });
-        saveUser();
+window.onload = async function(){
+    await checkSession();
+    await renderHomeNotice();
+}
+
+async function checkSession(){
+    const {data:{session}} = await supabase.auth.getSession();
+    if(session){
+        currentUserId = session.user.id;
+        const {data:prof} = await supabase.from("profiles").select("username,role").eq("id",currentUserId).single();
+        if(prof){
+            currentUsername = prof.username;
+            currentRole = prof.role;
+        }
     }
 }
 
-function initNoticeData(){
-    if(noticeList.length === 0){
-        noticeList = [
-            {id:1, content:"公园路小学(本)站点即日起暂停营业，恢复时间另行通知"},
-            {id:2, content:"公园路小学(东)站点正常运营，新增月票优惠活动"},
-            {id:3, content:"电摇飞车联赛将于下月开启，敬请期待"}
-        ];
-        saveNotice();
-    }
-}
-
-function saveUser(){
-    localStorage.setItem("dyfcUser", JSON.stringify(userList));
-}
-function saveOrder(){
-    localStorage.setItem("dyfcOrder", JSON.stringify(orderList));
-}
-function saveNotice(){
-    localStorage.setItem("dyfcNotice", JSON.stringify(noticeList));
-    renderHomeNotice();
-    renderUserNotice();
-}
-
-// ========== 页面切换 ==========
 function hideAll(){
     document.getElementById("home").style.display = "none";
     document.getElementById("login").style.display = "none";
@@ -660,287 +551,221 @@ function hideAll(){
     document.getElementById("adminPage").style.display = "none";
     document.getElementById("orderListPage").style.display = "none";
     document.getElementById("noticeManagePage").style.display = "none";
-    
     document.getElementById("loginError").innerText = "";
     document.getElementById("regError").innerText = "";
 }
 
-function showHome(){
-    hideAll();
-    document.getElementById("home").style.display = "block";
-    renderHomeNotice();
-}
+function showHome(){hideAll();document.getElementById("home").style.display="block";renderHomeNotice();}
 function showLogin(){hideAll();document.getElementById("login").style.display="block";}
 function showRegister(){hideAll();document.getElementById("register").style.display="block";}
 
-// ========== 公告渲染 ==========
-function renderHomeNotice(){
+async function renderHomeNotice(){
+    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     const box = document.getElementById("homeNoticeList");
     if(!box) return;
     box.innerHTML = "";
-    noticeList.forEach(item => {
+    if(!data||data.length===0){box.innerHTML="<div class='notice-item'>暂无公告</div>";return;}
+    data.forEach(item=>{
         const div = document.createElement("div");
-        div.className = "notice-item";
-        div.innerText = "• " + item.content;
+        div.className="notice-item";
+        div.innerText="• "+item.content;
         box.appendChild(div);
-    });
+    })
 }
 
-function renderUserNotice(){
+async function renderUserNotice(){
+    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     const box = document.getElementById("userNoticeList");
     if(!box) return;
-    box.innerHTML = "";
-    noticeList.forEach(item => {
+    box.innerHTML="";
+    if(!data||data.length===0){box.innerHTML="<div class='notice-item'>暂无公告</div>";return;}
+    data.forEach(item=>{
         const div = document.createElement("div");
-        div.className = "notice-item";
-        div.innerText = "• " + item.content;
+        div.className="notice-item";
+        div.innerText="• "+item.content;
         box.appendChild(div);
-    });
+    })
 }
 
-// ========== 注册登录 ==========
-function checkPwdStrong(pwd){
-    const reg = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]).{8,}$/;
-    return reg.test(pwd);
-}
+async function register(){
+    const username = document.getElementById("regUsername").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const pwd = document.getElementById("regPwd").value.trim();
+    const errTip = document.getElementById("regError");
+    if(!username||!email||!pwd){errTip.innerText="全部内容不能为空";return;}
+    if(pwd.length<6){errTip.innerText="密码至少6位";return;}
 
-function register(){
-    let name = document.getElementById("regUser").value.trim();
-    let pass = document.getElementById("regPwd").value.trim();
-    let role = document.getElementById("regRole").value;
-    let errorTip = document.getElementById("regError");
-    
-    if(!name || !pass){
-        errorTip.innerText = "用户名和密码不能为空";
-        return;
-    }
-    if(!checkPwdStrong(pass)){
-        errorTip.innerText = "密码不符合要求：需包含大写+小写+特殊字符，至少8位";
-        return;
-    }
-    if(userList.find(u=>u.username === name)){
-        errorTip.innerText = "该用户名已被注册";
-        return;
-    }
-    
-    userList.push({username:name, password:pass, role:role});
-    saveUser();
-    alert("注册成功！请登录");
+    const {data,error} = await supabase.auth.signUp({email:email,password:pwd});
+    if(error){errTip.innerText=error.message;return;}
+    const uid = data.user.id;
+    const {errIns} = await supabase.from("profiles").insert([{id:uid,username:username,role:"user"}]);
+    if(errIns){errTip.innerText=errIns.message;return;}
+    alert("注册成功，请登录");
     showLogin();
 }
 
-function login(){
-    let name = document.getElementById("loginUser").value.trim();
-    let pass = document.getElementById("loginPwd").value.trim();
-    let errorTip = document.getElementById("loginError");
-    
-    if(!name || !pass){
-        errorTip.innerText = "请输入用户名和密码";
-        return;
-    }
-    
-    let findUser = userList.find(u=>u.username === name && u.password === pass);
-    
-    if(!findUser){
-        errorTip.innerText = "用户名或密码错误，请检查后重试";
-        return;
-    }
-    
-    currentUser = name;
+async function login(){
+    const email = document.getElementById("loginEmail").value.trim();
+    const pwd = document.getElementById("loginPwd").value.trim();
+    const errTip = document.getElementById("loginError");
+    if(!email||!pwd){errTip.innerText="填写邮箱密码";return;}
+    const {data,error} = await supabase.auth.signInWithPassword({email,password:pwd});
+    if(error){errTip.innerText=error.message;return;}
+    currentUserId = data.user.id;
+    const {data:prof,error:perr} = await supabase.from("profiles").select("username,role").eq("id",currentUserId).single();
+    if(perr){errTip.innerText="用户资料读取失败";await supabase.auth.signOut();return;}
+    currentUsername = prof.username;
+    currentRole = prof.role;
     hideAll();
-    
-    if(findUser.role === "admin"){
-        document.getElementById("adminPage").style.display = "block";
+    if(currentRole==="admin"){
+        document.getElementById("adminPage").style.display="block";
     }else{
-        document.getElementById("userPage").style.display = "block";
-        renderUserNotice();
+        document.getElementById("userPage").style.display="block";
+        await renderUserNotice();
     }
 }
 
-function logout(){
-    currentUser = "";
+async function logout(){
+    await supabase.auth.signOut();
+    currentUserId=null;currentUsername="";currentRole="user";
     showHome();
 }
 
-// ========== 用户端购票流程 ==========
-function showStationPage(){
-    hideAll();
-    document.getElementById("userPage").style.display = "block";
-    document.getElementById("stationPage").style.display = "block";
-}
-
-function showTicketPage(){
-    hideAll();
-    document.getElementById("userPage").style.display = "block";
-    document.getElementById("ticketPage").style.display = "block";
-}
-
+function showStationPage(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("stationPage").style.display="block";}
+function showTicketPage(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("ticketPage").style.display="block";}
 function showBuyPage(ticket){
     currentTicketType = ticket;
     document.getElementById("selectedTicket").innerText = ticket;
     hideAll();
-    document.getElementById("userPage").style.display = "block";
-    document.getElementById("buyPage").style.display = "block";
+    document.getElementById("userPage").style.display="block";
+    document.getElementById("buyPage").style.display="block";
 }
 
-function submitOrder(){
-    let name = document.getElementById("buyerName").value.trim();
-    if(!name){
-        alert("请输入姓名");
-        return;
-    }
-    
-    let orderNo = "DYFC" + Date.now().toString().slice(-6) + Math.floor(Math.random()*1000).toString().padStart(3,'0');
-    
-    let order = {
-        name: name,
-        ticket: currentTicketType,
-        station: "公园路小学(东)",
-        orderNo: orderNo,
-        username: currentUser,
-        time: new Date().toLocaleString()
+async function submitOrder(){
+    const buyerName = document.getElementById("buyerName").value.trim();
+    if(!buyerName){alert("请填写姓名");return;}
+    const orderNo = "DYFC"+Date.now().toString().slice(-6)+Math.floor(Math.random()*1000).toString().padStart(3,"0");
+    const payload = {
+        ticket:currentTicketType,
+        name:buyerName,
+        station:"公园路小学(东)",
+        order_no:orderNo,
+        username:currentUsername
     };
-    
-    orderList.push(order);
-    saveOrder();
-    
-    document.getElementById("orderNo").innerText = orderNo;
+    const {error} = await supabase.from("dyfc_orders").insert([payload]);
+    if(error){alert("下单失败："+error.message);return;}
+    document.getElementById("orderNo").innerText=orderNo;
     hideAll();
-    document.getElementById("userPage").style.display = "block";
-    document.getElementById("orderSuccess").style.display = "block";
-    
-    document.getElementById("buyerName").value = "";
+    document.getElementById("userPage").style.display="block";
+    document.getElementById("orderSuccess").style.display="block";
+    document.getElementById("buyerName").value="";
 }
 
-function showMyOrder(){
-    renderMyOrder();
+async function showMyOrder(){
     hideAll();
-    document.getElementById("userPage").style.display = "block";
-    document.getElementById("myOrderPage").style.display = "block";
-}
-
-function renderMyOrder(){
+    document.getElementById("userPage").style.display="block";
+    document.getElementById("myOrderPage").style.display="block";
     const tbody = document.getElementById("myOrderBody");
-    const myOrders = orderList.filter(o => o.username === currentUser);
-    
-    if(myOrders.length === 0){
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无购票记录</td></tr>';
+    const {data} = await supabase.from("dyfc_orders").select("*").eq("username",currentUsername).order("create_at",{ascending:false});
+    if(!data||data.length===0){
+        tbody.innerHTML="<tr><td colspan='5' class='empty-tip'>暂无购票记录</td>";
         return;
     }
-    
-    tbody.innerHTML = "";
-    myOrders.slice().reverse().forEach(order => {
+    tbody.innerHTML="";
+    data.forEach(o=>{
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${order.ticket}</td>
-            <td>${order.name}</td>
-            <td>${order.orderNo}</td>
-            <td>${order.station}</td>
-            <td>${order.time}</td>
+        tr.innerHTML=`
+        <td>${o.ticket}</td>
+        <td>${o.name}</td>
+        <td>${o.order_no}</td>
+        <td>${o.station}</td>
+        <td>${new Date(o.create_at).toLocaleString()}</td>
         `;
         tbody.appendChild(tr);
-    });
+    })
 }
+function backToUser(){hideAll();document.getElementById("userPage").style.display="block";renderUserNotice();}
 
-function backToUser(){
+async function showOrderList(){
     hideAll();
-    document.getElementById("userPage").style.display = "block";
-}
-
-// ========== 管理员端 ==========
-function showOrderList(){
-    renderOrderTable();
-    hideAll();
-    document.getElementById("adminPage").style.display = "block";
-    document.getElementById("orderListPage").style.display = "block";
-}
-
-function renderOrderTable(){
-    let tbody = document.getElementById("orderTableBody");
-    tbody.innerHTML = "";
-    
-    if(orderList.length === 0){
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无订单</td></tr>';
+    document.getElementById("adminPage").style.display="block";
+    document.getElementById("orderListPage").style.display="block";
+    const tbody = document.getElementById("orderTableBody");
+    const {data} = await supabase.from("dyfc_orders").select("*").order("create_at",{ascending:false});
+    if(!data||data.length===0){
+        tbody.innerHTML="<tr><td colspan='6' class='empty-tip'>暂无订单</td>";
         return;
     }
-    
-    orderList.slice().reverse().forEach(order => {
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${order.ticket}</td>
-            <td>${order.name}</td>
-            <td>${order.orderNo}</td>
-            <td>${order.station}</td>
-            <td>${order.username || '未登录'}</td>
-            <td>${order.time}</td>
+    tbody.innerHTML="";
+    data.forEach(o=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML=`
+        <td>${o.ticket}</td>
+        <td>${o.name}</td>
+        <td>${o.order_no}</td>
+        <td>${o.station}</td>
+        <td>${o.username||"-"}</td>
+        <td>${new Date(o.create_at).toLocaleString()}</td>
         `;
         tbody.appendChild(tr);
-    });
+    })
 }
 
-function showNoticeManage(){
-    renderNoticeManage();
+async function showNoticeManage(){
     hideAll();
-    document.getElementById("adminPage").style.display = "block";
-    document.getElementById("noticeManagePage").style.display = "block";
+    document.getElementById("adminPage").style.display="block";
+    document.getElementById("noticeManagePage").style.display="block";
+    await renderNoticeManage();
 }
 
-function renderNoticeManage(){
+async function renderNoticeManage(){
     const box = document.getElementById("noticeManageList");
-    box.innerHTML = "";
-    
-    noticeList.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "notice-item-manage";
-        div.innerHTML = `
-            <div class="notice-content">${item.content}</div>
-            <div class="notice-actions">
-                <button class="btn btn-sm" onclick="editNotice(${item.id})">编辑</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteNotice(${item.id})">删除</button>
-            </div>
+    box.innerHTML="";
+    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
+    if(!data) return;
+    data.forEach(item=>{
+        const div=document.createElement("div");
+        div.className="notice-item-manage";
+        div.innerHTML=`
+        <div class="notice-content">${item.content}</div>
+        <div class="notice-actions">
+            <button class="btn btn-sm" onclick="editNotice(${item.id},'${item.content.replaceAll("'","\\'")}')">编辑</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteNotice(${item.id})">删除</button>
+        </div>
         `;
         box.appendChild(div);
-    });
+    })
 }
 
-function addNotice(){
-    const input = document.getElementById("newNoticeContent");
-    const content = input.value.trim();
-    if(!content){
-        alert("请输入公告内容");
-        return;
-    }
-    
-    const newId = noticeList.length > 0 ? Math.max(...noticeList.map(n=>n.id)) + 1 : 1;
-    noticeList.push({id: newId, content: content});
-    saveNotice();
-    renderNoticeManage();
-    input.value = "";
+async function addNotice(){
+    const inp = document.getElementById("newNoticeContent");
+    const c = inp.value.trim();
+    if(!c){alert("填写公告");return;}
+    const {error} = await supabase.from("dyfc_notices").insert([{content:c}]);
+    if(error){alert(error.message);return;}
+    inp.value="";
+    await renderNoticeManage();
+    await renderHomeNotice();
 }
 
-function editNotice(id){
-    const notice = noticeList.find(n => n.id === id);
-    if(!notice) return;
-    
-    const newContent = prompt("编辑公告内容：", notice.content);
-    if(newContent === null || newContent.trim() === "") return;
-    
-    notice.content = newContent.trim();
-    saveNotice();
-    renderNoticeManage();
+async function editNotice(id,oldText){
+    const newVal = prompt("编辑公告",oldText);
+    if(newVal===null||!newVal.trim()) return;
+    const {error} = await supabase.from("dyfc_notices").update({content:newVal.trim()}).eq("id",id);
+    if(error){alert(error.message);return;}
+    await renderNoticeManage();
+    await renderHomeNotice();
 }
 
-function deleteNotice(id){
-    if(!confirm("确定删除这条公告吗？")) return;
-    noticeList = noticeList.filter(n => n.id !== id);
-    saveNotice();
-    renderNoticeManage();
+async function deleteNotice(id){
+    if(!confirm("确定删除？")) return;
+    const {error} = await supabase.from("dyfc_notices").delete().eq("id",id);
+    if(error){alert(error.message);return;}
+    await renderNoticeManage();
+    await renderHomeNotice();
 }
 
-function backToAdmin(){
-    hideAll();
-    document.getElementById("adminPage").style.display = "block";
-}
+function backToAdmin(){hideAll();document.getElementById("adminPage").style.display="block";}
 </script>
 </body>
 </html>
