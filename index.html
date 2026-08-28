@@ -508,25 +508,7 @@ const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
 let currentTicketType = "";
 let currentUserId = null;
 let currentRole = "user";
-//页面切换函数【挂载到window全局，onclick可以调用】
-window.hideAll = function(){
-    document.getElementById("home").style.display = "none";
-    document.getElementById("login").style.display = "none";
-    document.getElementById("register").style.display = "none";
-    document.getElementById("userPage").style.display = "none";
-    document.getElementById("stationPage").style.display = "none";
-    document.getElementById("ticketPage").style.display = "none";
-    document.getElementById("buyPage").style.display = "none";
-    document.getElementById("orderSuccess").style.display = "none";
-    document.getElementById("myOrderPage").style.display = "none";
-    document.getElementById("adminPage").style.display = "none";
-    document.getElementById("orderListPage").style.display = "none";
-    document.getElementById("noticeManagePage").style.display = "none";
-    const elLoginErr = document.getElementById("loginError");
-    const elRegErr = document.getElementById("regError");
-    if(elLoginErr) elLoginErr.innerText = "";
-    if(elRegErr) elRegErr.innerText = "";
-}
+window.hideAll = function(){document.getElementById("home").style.display = "none";document.getElementById("login").style.display = "none";document.getElementById("register").style.display = "none";document.getElementById("userPage").style.display = "none";document.getElementById("stationPage").style.display = "none";document.getElementById("ticketPage").style.display = "none";document.getElementById("buyPage").style.display = "none";document.getElementById("orderSuccess").style.display = "none";document.getElementById("myOrderPage").style.display = "none";document.getElementById("adminPage").style.display = "none";document.getElementById("orderListPage").style.display = "none";document.getElementById("noticeManagePage").style.display = "none";const elLoginErr = document.getElementById("loginError");const elRegErr = document.getElementById("regError");if(elLoginErr) elLoginErr.innerText = "";if(elRegErr) elRegErr.innerText = "";}
 window.showHome = function(){hideAll();document.getElementById("home").style.display="block"; renderHomeNotice();}
 window.showLogin = function(){hideAll();document.getElementById("login").style.display="block";}
 window.showRegister = function(){hideAll();document.getElementById("register").style.display="block";}
@@ -534,13 +516,7 @@ window.backToUser = function(){hideAll();document.getElementById("userPage").sty
 window.backToAdmin = function(){hideAll();document.getElementById("adminPage").style.display="block";}
 window.showStationPage = function(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("stationPage").style.display="block";}
 window.showTicketPage = function(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("ticketPage").style.display="block";}
-window.showBuyPage = function(ticket){
-    currentTicketType = ticket;
-    document.getElementById("selectedTicket").innerText = ticket;
-    hideAll();
-    document.getElementById("userPage").style.display="block";
-    document.getElementById("buyPage").style.display="block";
-}
+window.showBuyPage = function(ticket){currentTicketType = ticket;document.getElementById("selectedTicket").innerText = ticket;hideAll();document.getElementById("userPage").style.display="block";document.getElementById("buyPage").style.display="block";}
 window.showMyOrder = showMyOrder;
 window.showOrderList = showOrderList;
 window.showNoticeManage = showNoticeManage;
@@ -551,253 +527,43 @@ window.submitOrder = submitOrder;
 window.addNotice = addNotice;
 window.editNotice = editNotice;
 window.deleteNotice = deleteNotice;
-//密码复杂度校验
-function checkPasswordComplex(pwd){
-    if(pwd.length < 8) return false;
-    if(!/[A-Z]/.test(pwd)) return false;
-    if(!/[a-z]/.test(pwd)) return false;
-    if(!/[0-9]/.test(pwd)) return false;
-    if(!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(pwd)) return false;
-    return true;
-}
-//简单邮箱格式校验
-function checkEmailFormat(email){
-    const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return reg.test(email);
-}
-
-window.onload = async function(){
-    if(window.supabase){
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log("✅Supabase加载成功");
-        await checkSession();
-        await renderHomeNotice();
-    }else{
-        alert("⚠️Supabase JS库加载失败！登录注册无法使用，但弹窗可以点开。");
-        console.warn("Supabase JS库加载失败");
-    }
-}
-async function checkSession(){
-    if(!supabase) return;
-    const {data:{session}} = await supabase.auth.getSession();
-    if(session){
-        currentUserId = session.user.id;
-        const {data:prof} = await supabase.from("profiles").select("role").eq("id",currentUserId).single();
-        if(prof){
-            currentRole = prof.role;
-        }
-    }
-}
-async function renderHomeNotice(){
-    if(!supabase) return;
-    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
-    const box = document.getElementById("homeNoticeList");
-    if(!box) return;
-    box.innerHTML = "";
-    if(!data||data.length===0){box.innerHTML="<div class='notice-item'>暂无公告</div>";return;}
-    data.forEach(item=>{
-        const div = document.createElement("div");
-        div.className="notice-item";
-        div.innerText="• "+item.content;
-        box.appendChild(div);
-    })
-}
-async function renderUserNotice(){
-    if(!supabase) return;
-    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
-    const box = document.getElementById("userNoticeList");
-    if(!box) return;
-    box.innerHTML="";
-    if(!data||data.length===0){box.innerHTML="<div class='notice-item'>暂无公告</div>";return;}
-    data.forEach(item=>{
-        const div = document.createElement("div");
-        div.className="notice-item";
-        div.innerText="• "+item.content;
-        box.appendChild(div);
-    })
-}
-async function register(){
-    if(!supabase){alert("网络异常，后端库未加载完成！");return;}
-    const email = document.getElementById("regEmail").value.trim();
-    const pwd = document.getElementById("regPwd").value.trim();
-    const errTip = document.getElementById("regError");
-
-    if(!email){errTip.innerText="邮箱不能为空";return;}
-    if(!checkEmailFormat(email)){errTip.innerText="邮箱格式不正确";return;}
-    if(!checkPasswordComplex(pwd)){
-        errTip.innerText="密码≥8位，需要：大写、小写、数字、特殊符号";
-        return;
-    }
-
-    const {data,error} = await supabase.auth.signUp({email:email,password:pwd});
-    if(error){
-        errTip.innerText="注册错误："+error.message;
-        console.error(error);
-        return;
-    }
-    const uid = data.user.id;
-    const {data:insData, error:errIns} = await supabase.from("profiles").insert([{id:uid,role:"user"}]);
-    if(errIns){
-        errTip.innerText="写入用户资料失败："+errIns.message;
-        console.error(errIns);
-        return;
-    }
-    alert("✅注册成功！请前往登录");
-    showLogin();
-}
-async function login(){
-    if(!supabase){alert("网络异常，后端库未加载完成！");return;}
-    const email = document.getElementById("loginEmail").value.trim();
-    const pwd = document.getElementById("loginPwd").value.trim();
-    const errTip = document.getElementById("loginError");
-    if(!email||!pwd){errTip.innerText="填写邮箱和密码";return;}
-
-    const {data,error} = await supabase.auth.signInWithPassword({email:email,password:pwd});
-    if(error){
-        errTip.innerText="登录失败："+error.message;
-        console.error(error);
-        return;
-    }
-    currentUserId = data.user.id;
-    const {data:prof,error:perr} = await supabase.from("profiles").select("role").eq("id",currentUserId).single();
-    if(perr){errTip.innerText="读取用户资料失败";await supabase.auth.signOut();return;}
-    currentRole = prof.role;
-    hideAll();
-    if(currentRole==="admin"){
-        document.getElementById("adminPage").style.display="block";
-    }else{
-        document.getElementById("userPage").style.display="block";
-        await renderUserNotice();
-    }
-}
-async function logout(){
-    if(supabase) await supabase.auth.signOut();
-    currentUserId=null;currentRole="user";
-    showHome();
-}
-async function submitOrder(){
-    if(!supabase){alert("网络异常，无法下单");return;}
-    const buyerName = document.getElementById("buyerName").value.trim();
-    if(!buyerName){alert("请填写姓名");return;}
-    const orderNo = "DYFC"+Date.now().toString().slice(-6)+Math.floor(Math.random()*1000).toString().padStart(3,"0");
-    const payload = {
-        ticket:currentTicketType,
-        name:buyerName,
-        station:"公园路小学(东)",
-        order_no:orderNo,
-        user_id:currentUserId
-    };
-    const {error} = await supabase.from("dyfc_orders").insert([payload]);
-    if(error){alert("下单失败："+error.message);return;}
-    document.getElementById("orderNo").innerText=orderNo;
-    hideAll();
-    document.getElementById("userPage").style.display="block";
-    document.getElementById("orderSuccess").style.display="block";
-    document.getElementById("buyerName").value="";
-}
-async function showMyOrder(){
-    if(!supabase){alert("网络异常");return;}
-    hideAll();
-    document.getElementById("userPage").style.display="block";
-    document.getElementById("myOrderPage").style.display="block";
-    const tbody = document.getElementById("myOrderBody");
-    const {data} = await supabase.from("dyfc_orders").select("*").eq("user_id",currentUserId).order("create_at",{ascending:false});
-    if(!data||data.length===0){
-        tbody.innerHTML="<tr><td colspan='5' class='empty-tip'>暂无购票记录</td>";
-        return;
-    }
-    tbody.innerHTML="";
-    data.forEach(o=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML=`
+function checkPasswordComplex(pwd){if(pwd.length < 8) return false;if(!/[A-Z]/.test(pwd)) return false;if(!/[a-z]/.test(pwd)) return false;if(!/[0-9]/.test(pwd)) return false;if(!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(pwd)) return false;return true;}
+function checkEmailFormat(email){const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;return reg.test(email);}
+window.onload = async function(){if(window.supabase){supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);console.log("✅Supabase加载成功");await checkSession();await renderHomeNotice();}else{alert("⚠️Supabase JS库加载失败！登录注册无法使用，但弹窗可以点开。");console.warn("Supabase JS库加载失败");}}
+async function checkSession(){if(!supabase) return;const {data:{session}} = await supabase.auth.getSession();if(session){currentUserId = session.user.id;const {data:prof} = await supabase.from("profiles").select("role").eq("id",currentUserId).single();if(prof){currentRole = prof.role;}}}
+async function renderHomeNotice(){if(!supabase) return;const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});const box = document.getElementById("homeNoticeList");if(!box) return;box.innerHTML = "";if(!data||data.length===0){box.innerHTML="<div class='notice-item'>暂无公告</div>";return;}data.forEach(item=>{const div = document.createElement("div");div.className="notice-item";div.innerText="• "+item.content;box.appendChild(div);})}
+async function renderUserNotice(){if(!supabase) return;const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});const box = document.getElementById("userNoticeList");if(!box) return;box.innerHTML="";if(!data||data.length===0){box.innerHTML="<div class='notice-item'>暂无公告</div>";return;}data.forEach(item=>{const div = document.createElement("div");div.className="notice-item";div.innerText="• "+item.content;box.appendChild(div);})}
+async function register(){const regBtn = document.querySelector("#register .submit-btn");if(regBtn) regBtn.disabled = true;if(!supabase){alert("网络异常，后端库未加载完成！");if(regBtn) setTimeout(()=>regBtn.disabled=false,3000);return;}const email = document.getElementById("regEmail").value.trim();const pwd = document.getElementById("regPwd").value.trim();const errTip = document.getElementById("regError");if(!email){errTip.innerText="邮箱不能为空";if(regBtn) setTimeout(()=>regBtn.disabled=false,3000);return;}if(!checkEmailFormat(email)){errTip.innerText="邮箱格式不正确";if(regBtn) setTimeout(()=>regBtn.disabled=false,3000);return;}if(!checkPasswordComplex(pwd)){errTip.innerText="密码≥8位，需要：大写、小写、数字、特殊符号";if(regBtn) setTimeout(()=>regBtn.disabled=false,3000);return;}const {data,error} = await supabase.auth.signUp({email:email,password:pwd});if(error){errTip.innerText="注册错误："+error.message;console.error(error);if(regBtn) setTimeout(()=>regBtn.disabled=false,3000);return;}const uid = data.user.id;const {data:insData, error:errIns} = await supabase.from("profiles").insert([{id:uid,role:"user"}]);if(errIns){errTip.innerText="写入用户资料失败："+errIns.message;console.error(errIns);if(regBtn) setTimeout(()=>regBtn.disabled=false,3000);return;}alert("✅注册成功！请前往登录");showLogin();if(regBtn) setTimeout(()=>regBtn.disabled=false,3000);}
+async function login(){const loginBtn = document.querySelector("#login .submit-btn");if(loginBtn) loginBtn.disabled = true;if(!supabase){alert("网络异常，后端库未加载完成！");if(loginBtn) setTimeout(()=>loginBtn.disabled=false,3000);return;}const email = document.getElementById("loginEmail").value.trim();const pwd = document.getElementById("loginPwd").value.trim();const errTip = document.getElementById("loginError");if(!email||!pwd){errTip.innerText="填写邮箱和密码";if(loginBtn) setTimeout(()=>loginBtn.disabled=false,3000);return;}const {data,error} = await supabase.auth.signInWithPassword({email:email,password:pwd});if(error){errTip.innerText="登录失败："+error.message;console.error(error);if(loginBtn) setTimeout(()=>loginBtn.disabled=false,3000);return;}currentUserId = data.user.id;const {data:prof,error:perr} = await supabase.from("profiles").select("role").eq("id",currentUserId).single();if(perr){errTip.innerText="读取用户资料失败";await supabase.auth.signOut();if(loginBtn) setTimeout(()=>loginBtn.disabled=false,3000);return;}currentRole = prof.role;hideAll();if(currentRole==="admin"){document.getElementById("adminPage").style.display="block";}else{document.getElementById("userPage").style.display="block";await renderUserNotice();}if(loginBtn) setTimeout(()=>loginBtn.disabled=false,3000);}
+async function logout(){if(supabase) await supabase.auth.signOut();currentUserId=null;currentRole="user";showHome();}
+async function submitOrder(){if(!supabase){alert("网络异常，无法下单");return;}const buyerName = document.getElementById("buyerName").value.trim();if(!buyerName){alert("请填写姓名");return;}const orderNo = "DYFC"+Date.now().toString().slice(-6)+Math.floor(Math.random()*1000).toString().padStart(3,"0");const payload = {ticket:currentTicketType,name:buyerName,station:"公园路小学(东)",order_no:orderNo,user_id:currentUserId};const {error} = await supabase.from("dyfc_orders").insert([payload]);if(error){alert("下单失败："+error.message);return;}document.getElementById("orderNo").innerText=orderNo;hideAll();document.getElementById("userPage").style.display="block";document.getElementById("orderSuccess").style.display="block";document.getElementById("buyerName").value="";}
+async function showMyOrder(){if(!supabase){alert("网络异常");return;}hideAll();document.getElementById("userPage").style.display="block";document.getElementById("myOrderPage").style.display="block";const tbody = document.getElementById("myOrderBody");const {data} = await supabase.from("dyfc_orders").select("*").eq("user_id",currentUserId).order("create_at",{ascending:false});if(!data||data.length===0){tbody.innerHTML="<tr><td colspan='5' class='empty-tip'>暂无购票记录</td>";return;}tbody.innerHTML="";data.forEach(o=>{const tr = document.createElement("tr");tr.innerHTML=`
         <td>${o.ticket}</td>
         <td>${o.name}</td>
         <td>${o.order_no}</td>
         <td>${o.station}</td>
         <td>${new Date(o.create_at).toLocaleString()}</td>
-        `;
-        tbody.appendChild(tr);
-    })
-}
-async function showOrderList(){
-    if(!supabase){alert("网络异常");return;}
-    hideAll();
-    document.getElementById("adminPage").style.display="block";
-    document.getElementById("orderListPage").style.display="block";
-    const tbody = document.getElementById("orderTableBody");
-    const {data} = await supabase.from("dyfc_orders").select("*").order("create_at",{ascending:false});
-    if(!data||data.length===0){
-        tbody.innerHTML="<tr><td colspan='6' class='empty-tip'>暂无订单</td>";
-        return;
-    }
-    tbody.innerHTML="";
-    data.forEach(o=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML=`
+        `;tbody.appendChild(tr);})}
+async function showOrderList(){if(!supabase){alert("网络异常");return;}hideAll();document.getElementById("adminPage").style.display="block";document.getElementById("orderListPage").style.display="block";const tbody = document.getElementById("orderTableBody");const {data} = await supabase.from("dyfc_orders").select("*").order("create_at",{ascending:false});if(!data||data.length===0){tbody.innerHTML="<tr><td colspan='6' class='empty-tip'>暂无订单</td>";return;}tbody.innerHTML="";data.forEach(o=>{const tr = document.createElement("tr");tr.innerHTML=`
         <td>${o.ticket}</td>
         <td>${o.name}</td>
         <td>${o.order_no}</td>
         <td>${o.station}</td>
         <td>${o.user_id||"-"}</td>
         <td>${new Date(o.create_at).toLocaleString()}</td>
-        `;
-        tbody.appendChild(tr);
-    })
-}
-async function showNoticeManage(){
-    if(!supabase){alert("网络异常");return;}
-    hideAll();
-    document.getElementById("adminPage").style.display="block";
-    document.getElementById("noticeManagePage").style.display="block";
-    await renderNoticeManage();
-}
-async function renderNoticeManage(){
-    if(!supabase) return;
-    const box = document.getElementById("noticeManageList");
-    box.innerHTML="";
-    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
-    if(!data) return;
-    data.forEach(item=>{
-        const div=document.createElement("div");
-        div.className="notice-item-manage";
-        div.innerHTML=`
+        `;tbody.appendChild(tr);})}
+async function showNoticeManage(){if(!supabase){alert("网络异常");return;}hideAll();document.getElementById("adminPage").style.display="block";document.getElementById("noticeManagePage").style.display="block";await renderNoticeManage();}
+async function renderNoticeManage(){if(!supabase) return;const box = document.getElementById("noticeManageList");box.innerHTML="";const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});if(!data) return;data.forEach(item=>{const div=document.createElement("div");div.className="notice-item-manage";div.innerHTML=`
         <div class="notice-content">${item.content}</div>
         <div class="notice-actions">
             <button class="btn btn-sm" onclick="editNotice(${item.id},'${item.content.replaceAll("'","\\'")}')">编辑</button>
             <button class="btn btn-sm btn-danger" onclick="deleteNotice(${item.id})">删除</button>
         </div>
-        `;
-        box.appendChild(div);
-    })
-}
-async function addNotice(){
-    if(!supabase){alert("网络异常");return;}
-    const inp = document.getElementById("newNoticeContent");
-    const c = inp.value.trim();
-    if(!c){alert("填写公告");return;}
-    const {error} = await supabase.from("dyfc_notices").insert([{content:c}]);
-    if(error){alert(error.message);return;}
-    inp.value="";
-    await renderNoticeManage();
-    await renderHomeNotice();
-}
-async function editNotice(id,oldText){
-    if(!supabase){alert("网络异常");return;}
-    const newVal = prompt("编辑公告",oldText);
-    if(newVal===null||!newVal.trim()) return;
-    const {error} = await supabase.from("dyfc_notices").update({content:newVal.trim()}).eq("id",id);
-    if(error){alert(error.message);return;}
-    await renderNoticeManage();
-    await renderHomeNotice();
-}
-async function deleteNotice(id){
-    if(!supabase){alert("网络异常");return;}
-    if(!confirm("确定删除？")) return;
-    const {error} = await supabase.from("dyfc_notices").delete().eq("id",id);
-    if(error){alert(error.message);return;}
-    await renderNoticeManage();
-    await renderHomeNotice();
-}
+        `;box.appendChild(div);})}
+async function addNotice(){if(!supabase){alert("网络异常");return;}const inp = document.getElementById("newNoticeContent");const c = inp.value.trim();if(!c){alert("填写公告");return;}const {error} = await supabase.from("dyfc_notices").insert([{content:c}]);if(error){alert(error.message);return;}inp.value="";await renderNoticeManage();await renderHomeNotice();}
+async function editNotice(id,oldText){if(!supabase){alert("网络异常");return;}const newVal = prompt("编辑公告",oldText);if(newVal===null||!newVal.trim()) return;const {error} = await supabase.from("dyfc_notices").update({content:newVal.trim()}).eq("id",id);if(error){alert(error.message);return;}await renderNoticeManage();await renderHomeNotice();}
+async function deleteNotice(id){if(!supabase){alert("网络异常");return;}if(!confirm("确定删除？")) return;const {error} = await supabase.from("dyfc_notices").delete().eq("id",id);if(error){alert(error.message);return;}await renderNoticeManage();await renderHomeNotice();}
 </script>
 </body>
 </html>
+
