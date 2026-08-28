@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电摇飞车 - 官方网站</title>
+    <link rel="icon" href="dy.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft Yahei",sans-serif;}
@@ -319,12 +320,9 @@
 <body>
 <header>
     <div class="logo" style="display:flex; align-items:center; gap:10px;">
-    <img src="dy.png" alt="电摇飞车" style="height: 32px; display:block;">
-    <span style="color:#ffffff; font-size:18px; font-weight:500;">电摇飞车</span>
-</div>
-
-</div>
-
+        <img src="dy.png" alt="电摇飞车" style="height: 32px; display:block;">
+        <span style="color:#ffffff; font-size:18px; font-weight:500;">电摇飞车</span>
+    </div>
     <div class="nav">
         <a onclick="showHome()">首页</a>
         <a onclick="showLogin()">登录</a>
@@ -345,20 +343,21 @@
         </div>
     </div>
 
+    <!-- 登录：用户名+密码，无邮箱 -->
     <div id="login" class="login-box">
-        <h2>账号登录（邮箱）</h2>
-        <input type="email" id="loginEmail" placeholder="输入邮箱">
+        <h2>账号登录</h2>
+        <input type="text" id="loginUsername" placeholder="输入用户名">
         <input type="password" id="loginPwd" placeholder="输入密码">
         <div class="error-tip" id="loginError"></div>
         <button class="submit-btn" onclick="login()">登录</button>
         <div class="tip" onclick="showRegister()">没有账号？去注册</div>
     </div>
 
+    <!-- 注册：用户名+密码，无邮箱 -->
     <div id="register" class="register-box">
         <h2>新用户注册</h2>
-        <input type="text" id="regUsername" placeholder="设置昵称">
-        <input type="email" id="regEmail" placeholder="邮箱">
-        <input type="password" id="regPwd" placeholder="设置密码">
+        <input type="text" id="regUsername" placeholder="设置用户名">
+        <input type="password" id="regPwd" placeholder="设置密码(≥8位，大小写+数字+特殊符号)">
         <div class="error-tip" id="regError"></div>
         <button class="submit-btn" onclick="register()">完成注册</button>
         <div class="tip" onclick="showLogin()">已有账号？去登录</div>
@@ -517,7 +516,6 @@
 </div>
 
 <script>
-// ============ Supabase配置 ============
 const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -526,6 +524,16 @@ let currentTicketType = "";
 let currentUserId = null;
 let currentUsername = "";
 let currentRole = "user";
+
+// 密码复杂度校验：>=8，大写、小写、数字、特殊符号
+function checkPasswordComplex(pwd){
+    if(pwd.length < 8) return false;
+    if(!/[A-Z]/.test(pwd)) return false;
+    if(!/[a-z]/.test(pwd)) return false;
+    if(!/[0-9]/.test(pwd)) return false;
+    if(!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(pwd)) return false;
+    return true;
+}
 
 window.onload = async function(){
     await checkSession();
@@ -593,35 +601,43 @@ async function renderUserNotice(){
     })
 }
 
+// ==========注册（无邮箱，虚拟邮箱 username@dyfc‑fake.internal）==========
 async function register(){
     const username = document.getElementById("regUsername").value.trim();
-    const email = document.getElementById("regEmail").value.trim();
     const pwd = document.getElementById("regPwd").value.trim();
     const errTip = document.getElementById("regError");
-    if(!username||!email||!pwd){errTip.innerText="全部内容不能为空";return;}
-    if(pwd.length<6){errTip.innerText="密码至少6位";return;}
 
-    const {data,error} = await supabase.auth.signUp({email:email,password:pwd});
+    if(!username){errTip.innerText="用户名不能为空";return;}
+    if(!checkPasswordComplex(pwd)){
+        errTip.innerText="密码必须≥8位，包含大写、小写、数字、特殊符号";
+        return;
+    }
+    const fakeEmail = `${username}@dyfc-fake.internal`;
+    const {data,error} = await supabase.auth.signUp({email:fakeEmail,password:pwd});
     if(error){errTip.innerText=error.message;return;}
     const uid = data.user.id;
-    const {errIns} = await supabase.from("profiles").insert([{id:uid,username:username,role:"user"}]);
+    const {data:insData, error:errIns} = await supabase.from("profiles").insert([{id:uid,username:username,role:"user"}]);
     if(errIns){errTip.innerText=errIns.message;return;}
     alert("注册成功，请登录");
     showLogin();
 }
 
+// ==========登录：用户名转虚拟邮箱登录==========
 async function login(){
-    const email = document.getElementById("loginEmail").value.trim();
+    const username = document.getElementById("loginUsername").value.trim();
     const pwd = document.getElementById("loginPwd").value.trim();
     const errTip = document.getElementById("loginError");
-    if(!email||!pwd){errTip.innerText="填写邮箱密码";return;}
-    const {data,error} = await supabase.auth.signInWithPassword({email,password:pwd});
-    if(error){errTip.innerText=error.message;return;}
+    if(!username||!pwd){errTip.innerText="填写用户名和密码";return;}
+    const fakeEmail = `${username}@dyfc-fake.internal`;
+    const {data,error} = await supabase.auth.signInWithPassword({email:fakeEmail,password:pwd});
+    if(error){errTip.innerText="用户名或密码错误";return;}
+
     currentUserId = data.user.id;
     const {data:prof,error:perr} = await supabase.from("profiles").select("username,role").eq("id",currentUserId).single();
     if(perr){errTip.innerText="用户资料读取失败";await supabase.auth.signOut();return;}
     currentUsername = prof.username;
     currentRole = prof.role;
+
     hideAll();
     if(currentRole==="admin"){
         document.getElementById("adminPage").style.display="block";
@@ -690,6 +706,7 @@ async function showMyOrder(){
         tbody.appendChild(tr);
     })
 }
+
 function backToUser(){hideAll();document.getElementById("userPage").style.display="block";renderUserNotice();}
 
 async function showOrderList(){
