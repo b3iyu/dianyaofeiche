@@ -343,7 +343,6 @@
         </div>
     </div>
 
-    <!-- 登录：用户名+密码，无邮箱 -->
     <div id="login" class="login-box">
         <h2>账号登录</h2>
         <input type="text" id="loginUsername" placeholder="输入用户名">
@@ -353,11 +352,10 @@
         <div class="tip" onclick="showRegister()">没有账号？去注册</div>
     </div>
 
-    <!-- 注册：用户名+密码，无邮箱 -->
     <div id="register" class="register-box">
         <h2>新用户注册</h2>
         <input type="text" id="regUsername" placeholder="设置用户名">
-        <input type="password" id="regPwd" placeholder="设置密码(≥8位，大小写+数字+特殊符号)">
+        <input type="password" id="regPwd" placeholder="密码≥8位：大写+小写+数字+特殊符号">
         <div class="error-tip" id="regError"></div>
         <button class="submit-btn" onclick="register()">完成注册</button>
         <div class="tip" onclick="showLogin()">已有账号？去登录</div>
@@ -516,43 +514,17 @@
 </div>
 
 <script>
+let supabase = null;
 const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentTicketType = "";
 let currentUserId = null;
 let currentUsername = "";
 let currentRole = "user";
 
-// 密码复杂度校验：>=8，大写、小写、数字、特殊符号
-function checkPasswordComplex(pwd){
-    if(pwd.length < 8) return false;
-    if(!/[A-Z]/.test(pwd)) return false;
-    if(!/[a-z]/.test(pwd)) return false;
-    if(!/[0-9]/.test(pwd)) return false;
-    if(!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(pwd)) return false;
-    return true;
-}
-
-window.onload = async function(){
-    await checkSession();
-    await renderHomeNotice();
-}
-
-async function checkSession(){
-    const {data:{session}} = await supabase.auth.getSession();
-    if(session){
-        currentUserId = session.user.id;
-        const {data:prof} = await supabase.from("profiles").select("username,role").eq("id",currentUserId).single();
-        if(prof){
-            currentUsername = prof.username;
-            currentRole = prof.role;
-        }
-    }
-}
-
-function hideAll(){
+//页面切换函数【挂载到window全局，onclick可以调用】
+window.hideAll = function(){
     document.getElementById("home").style.display = "none";
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none";
@@ -565,15 +537,74 @@ function hideAll(){
     document.getElementById("adminPage").style.display = "none";
     document.getElementById("orderListPage").style.display = "none";
     document.getElementById("noticeManagePage").style.display = "none";
-    document.getElementById("loginError").innerText = "";
-    document.getElementById("regError").innerText = "";
+    const elLoginErr = document.getElementById("loginError");
+    const elRegErr = document.getElementById("regError");
+    if(elLoginErr) elLoginErr.innerText = "";
+    if(elRegErr) elRegErr.innerText = "";
 }
 
-function showHome(){hideAll();document.getElementById("home").style.display="block";renderHomeNotice();}
-function showLogin(){hideAll();document.getElementById("login").style.display="block";}
-function showRegister(){hideAll();document.getElementById("register").style.display="block";}
+window.showHome = function(){hideAll();document.getElementById("home").style.display="block"; renderHomeNotice();}
+window.showLogin = function(){hideAll();document.getElementById("login").style.display="block";}
+window.showRegister = function(){hideAll();document.getElementById("register").style.display="block";}
+window.backToUser = function(){hideAll();document.getElementById("userPage").style.display="block"; renderUserNotice();}
+window.backToAdmin = function(){hideAll();document.getElementById("adminPage").style.display="block";}
+window.showStationPage = function(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("stationPage").style.display="block";}
+window.showTicketPage = function(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("ticketPage").style.display="block";}
+window.showBuyPage = function(ticket){
+    currentTicketType = ticket;
+    document.getElementById("selectedTicket").innerText = ticket;
+    hideAll();
+    document.getElementById("userPage").style.display="block";
+    document.getElementById("buyPage").style.display="block";
+}
+window.showMyOrder = showMyOrder;
+window.showOrderList = showOrderList;
+window.showNoticeManage = showNoticeManage;
+window.logout = logout;
+window.login = login;
+window.register = register;
+window.submitOrder = submitOrder;
+window.addNotice = addNotice;
+window.editNotice = editNotice;
+window.deleteNotice = deleteNotice;
+
+//密码复杂度校验
+function checkPasswordComplex(pwd){
+    if(pwd.length < 8) return false;
+    if(!/[A-Z]/.test(pwd)) return false;
+    if(!/[a-z]/.test(pwd)) return false;
+    if(!/[0-9]/.test(pwd)) return false;
+    if(!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(pwd)) return false;
+    return true;
+}
+
+window.onload = async function(){
+    if(window.supabase){
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log("✅Supabase加载成功");
+        await checkSession();
+        await renderHomeNotice();
+    }else{
+        alert("⚠️Supabase JS库加载失败！登录注册无法使用，但弹窗可以点开。");
+        console.warn("Supabase JS库加载失败");
+    }
+}
+
+async function checkSession(){
+    if(!supabase) return;
+    const {data:{session}} = await supabase.auth.getSession();
+    if(session){
+        currentUserId = session.user.id;
+        const {data:prof} = await supabase.from("profiles").select("username,role").eq("id",currentUserId).single();
+        if(prof){
+            currentUsername = prof.username;
+            currentRole = prof.role;
+        }
+    }
+}
 
 async function renderHomeNotice(){
+    if(!supabase) return;
     const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     const box = document.getElementById("homeNoticeList");
     if(!box) return;
@@ -588,6 +619,7 @@ async function renderHomeNotice(){
 }
 
 async function renderUserNotice(){
+    if(!supabase) return;
     const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     const box = document.getElementById("userNoticeList");
     if(!box) return;
@@ -601,43 +633,54 @@ async function renderUserNotice(){
     })
 }
 
-// ==========注册（无邮箱，虚拟邮箱 username@dyfc‑fake.internal）==========
 async function register(){
+    if(!supabase){alert("网络异常，后端库未加载完成！");return;}
     const username = document.getElementById("regUsername").value.trim();
     const pwd = document.getElementById("regPwd").value.trim();
     const errTip = document.getElementById("regError");
 
     if(!username){errTip.innerText="用户名不能为空";return;}
     if(!checkPasswordComplex(pwd)){
-        errTip.innerText="密码必须≥8位，包含大写、小写、数字、特殊符号";
+        errTip.innerText="密码≥8位，需要：大写、小写、数字、特殊符号";
         return;
     }
     const fakeEmail = `${username}@dyfc-fake.internal`;
+    console.log("尝试注册，虚拟邮箱：",fakeEmail);
     const {data,error} = await supabase.auth.signUp({email:fakeEmail,password:pwd});
-    if(error){errTip.innerText=error.message;return;}
+    if(error){
+        errTip.innerText="注册错误："+error.message;
+        console.error(error);
+        return;
+    }
     const uid = data.user.id;
     const {data:insData, error:errIns} = await supabase.from("profiles").insert([{id:uid,username:username,role:"user"}]);
-    if(errIns){errTip.innerText=errIns.message;return;}
-    alert("注册成功，请登录");
+    if(errIns){
+        errTip.innerText="写入用户资料失败："+errIns.message;
+        console.error(errIns);
+        return;
+    }
+    alert("✅注册成功！请前往登录");
     showLogin();
 }
 
-// ==========登录：用户名转虚拟邮箱登录==========
 async function login(){
+    if(!supabase){alert("网络异常，后端库未加载完成！");return;}
     const username = document.getElementById("loginUsername").value.trim();
     const pwd = document.getElementById("loginPwd").value.trim();
     const errTip = document.getElementById("loginError");
     if(!username||!pwd){errTip.innerText="填写用户名和密码";return;}
     const fakeEmail = `${username}@dyfc-fake.internal`;
     const {data,error} = await supabase.auth.signInWithPassword({email:fakeEmail,password:pwd});
-    if(error){errTip.innerText="用户名或密码错误";return;}
-
+    if(error){
+        errTip.innerText="登录失败："+error.message;
+        console.error(error);
+        return;
+    }
     currentUserId = data.user.id;
     const {data:prof,error:perr} = await supabase.from("profiles").select("username,role").eq("id",currentUserId).single();
-    if(perr){errTip.innerText="用户资料读取失败";await supabase.auth.signOut();return;}
+    if(perr){errTip.innerText="读取用户资料失败";await supabase.auth.signOut();return;}
     currentUsername = prof.username;
     currentRole = prof.role;
-
     hideAll();
     if(currentRole==="admin"){
         document.getElementById("adminPage").style.display="block";
@@ -648,22 +691,13 @@ async function login(){
 }
 
 async function logout(){
-    await supabase.auth.signOut();
+    if(supabase) await supabase.auth.signOut();
     currentUserId=null;currentUsername="";currentRole="user";
     showHome();
 }
 
-function showStationPage(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("stationPage").style.display="block";}
-function showTicketPage(){hideAll();document.getElementById("userPage").style.display="block";document.getElementById("ticketPage").style.display="block";}
-function showBuyPage(ticket){
-    currentTicketType = ticket;
-    document.getElementById("selectedTicket").innerText = ticket;
-    hideAll();
-    document.getElementById("userPage").style.display="block";
-    document.getElementById("buyPage").style.display="block";
-}
-
 async function submitOrder(){
+    if(!supabase){alert("网络异常，无法下单");return;}
     const buyerName = document.getElementById("buyerName").value.trim();
     if(!buyerName){alert("请填写姓名");return;}
     const orderNo = "DYFC"+Date.now().toString().slice(-6)+Math.floor(Math.random()*1000).toString().padStart(3,"0");
@@ -684,6 +718,7 @@ async function submitOrder(){
 }
 
 async function showMyOrder(){
+    if(!supabase){alert("网络异常");return;}
     hideAll();
     document.getElementById("userPage").style.display="block";
     document.getElementById("myOrderPage").style.display="block";
@@ -707,9 +742,8 @@ async function showMyOrder(){
     })
 }
 
-function backToUser(){hideAll();document.getElementById("userPage").style.display="block";renderUserNotice();}
-
 async function showOrderList(){
+    if(!supabase){alert("网络异常");return;}
     hideAll();
     document.getElementById("adminPage").style.display="block";
     document.getElementById("orderListPage").style.display="block";
@@ -735,6 +769,7 @@ async function showOrderList(){
 }
 
 async function showNoticeManage(){
+    if(!supabase){alert("网络异常");return;}
     hideAll();
     document.getElementById("adminPage").style.display="block";
     document.getElementById("noticeManagePage").style.display="block";
@@ -742,6 +777,7 @@ async function showNoticeManage(){
 }
 
 async function renderNoticeManage(){
+    if(!supabase) return;
     const box = document.getElementById("noticeManageList");
     box.innerHTML="";
     const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
@@ -761,6 +797,7 @@ async function renderNoticeManage(){
 }
 
 async function addNotice(){
+    if(!supabase){alert("网络异常");return;}
     const inp = document.getElementById("newNoticeContent");
     const c = inp.value.trim();
     if(!c){alert("填写公告");return;}
@@ -772,6 +809,7 @@ async function addNotice(){
 }
 
 async function editNotice(id,oldText){
+    if(!supabase){alert("网络异常");return;}
     const newVal = prompt("编辑公告",oldText);
     if(newVal===null||!newVal.trim()) return;
     const {error} = await supabase.from("dyfc_notices").update({content:newVal.trim()}).eq("id",id);
@@ -781,14 +819,13 @@ async function editNotice(id,oldText){
 }
 
 async function deleteNotice(id){
+    if(!supabase){alert("网络异常");return;}
     if(!confirm("确定删除？")) return;
     const {error} = await supabase.from("dyfc_notices").delete().eq("id",id);
     if(error){alert(error.message);return;}
     await renderNoticeManage();
     await renderHomeNotice();
 }
-
-function backToAdmin(){hideAll();document.getElementById("adminPage").style.display="block";}
 </script>
 </body>
 </html>
