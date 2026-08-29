@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电摇飞车 - 官方网站</title>
+    <!-- 只引入一次supabase库 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft Yahei",sans-serif;}
@@ -525,7 +526,7 @@
 </div>
 
 <script>
-// 【仅此处唯一一次声明supabase，没有第二处！】
+// =========这里只声明一次supabase！！文件末尾仅此一个script块，没有第二个！！========
 const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
