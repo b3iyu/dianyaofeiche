@@ -341,7 +341,6 @@
             <div id="homeNoticeList"></div>
         </div>
     </div>
-    <!-- 修改：登录框，移除邮箱 -->
     <div id="login" class="login-box">
         <h2>账号登录</h2>
         <input type="text" id="loginUsername" placeholder="输入用户名">
@@ -350,7 +349,6 @@
         <button class="submit-btn" onclick="login()">登录</button>
         <div class="tip" onclick="showRegister()">没有账号？去注册</div>
     </div>
-    <!-- 修改：注册框，移除邮箱，只保留用户名密码 -->
     <div id="register" class="register-box">
         <h2>新用户注册</h2>
         <input type="text" id="regUsername" placeholder="设置用户名">
@@ -507,7 +505,8 @@
 // ============ Supabase配置 ============
 const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 修复！变量名改为supabaseClient，不和CDN全局supabase冲突
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentTicketType = "";
 let currentUsername = "";
@@ -562,7 +561,7 @@ function showLogin(){hideAll();document.getElementById("login").style.display="b
 function showRegister(){hideAll();document.getElementById("register").style.display="block";}
 
 async function renderHomeNotice(){
-    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
+    const {data} = await supabaseClient.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     const box = document.getElementById("homeNoticeList");
     if(!box) return;
     box.innerHTML = "";
@@ -575,7 +574,7 @@ async function renderHomeNotice(){
     })
 }
 async function renderUserNotice(){
-    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
+    const {data} = await supabaseClient.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     const box = document.getElementById("userNoticeList");
     if(!box) return;
     box.innerHTML="";
@@ -596,7 +595,7 @@ async function register(){
     if(!username||!pwd){errTip.innerText="用户名和密码不能为空";return;}
     if(pwd.length<6){errTip.innerText="密码至少6位";return;}
     const hash = await sha256(pwd);
-    const {error} = await supabase.from("app_users").insert([{username:username,password_hash:hash,role:"user"}]);
+    const {error} = await supabaseClient.from("app_users").insert([{username:username,password_hash:hash,role:"user"}]);
     if(error){
         if(error.code==='23505'){
             errTip.innerText="该用户名已被占用";
@@ -616,7 +615,7 @@ async function login(){
     const errTip = document.getElementById("loginError");
     if(!username||!pwd){errTip.innerText="填写用户名密码";return;}
     const hash = await sha256(pwd);
-    const {data,error} = await supabase.from("app_users").select("username,role").eq("username",username).eq("password_hash",hash).single();
+    const {data,error} = await supabaseClient.from("app_users").select("username,role").eq("username",username).eq("password_hash",hash).single();
     if(error||!data){
         errTip.innerText="用户名或者密码错误";
         return;
@@ -660,7 +659,7 @@ async function submitOrder(){
         order_no:orderNo,
         username:currentUsername
     };
-    const {error} = await supabase.from("dyfc_orders").insert([payload]);
+    const {error} = await supabaseClient.from("dyfc_orders").insert([payload]);
     if(error){alert("下单失败："+error.message);return;}
     document.getElementById("orderNo").innerText=orderNo;
     hideAll();
@@ -673,7 +672,7 @@ async function showMyOrder(){
     document.getElementById("userPage").style.display="block";
     document.getElementById("myOrderPage").style.display="block";
     const tbody = document.getElementById("myOrderBody");
-    const {data} = await supabase.from("dyfc_orders").select("*").eq("username",currentUsername).order("create_at",{ascending:false});
+    const {data} = await supabaseClient.from("dyfc_orders").select("*").eq("username",currentUsername).order("create_at",{ascending:false});
     if(!data||data.length===0){
         tbody.innerHTML="<tr><td colspan='5' class='empty-tip'>暂无购票记录</td>";
         return;
@@ -697,7 +696,7 @@ async function showOrderList(){
     document.getElementById("adminPage").style.display="block";
     document.getElementById("orderListPage").style.display="block";
     const tbody = document.getElementById("orderTableBody");
-    const {data} = await supabase.from("dyfc_orders").select("*").order("create_at",{ascending:false});
+    const {data} = await supabaseClient.from("dyfc_orders").select("*").order("create_at",{ascending:false});
     if(!data||data.length===0){
         tbody.innerHTML="<tr><td colspan='6' class='empty-tip'>暂无订单</td>";
         return;
@@ -725,7 +724,7 @@ async function showNoticeManage(){
 async function renderNoticeManage(){
     const box = document.getElementById("noticeManageList");
     box.innerHTML="";
-    const {data} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
+    const {data} = await supabaseClient.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     if(!data) return;
     data.forEach(item=>{
         const div=document.createElement("div");
@@ -744,7 +743,7 @@ async function addNotice(){
     const inp = document.getElementById("newNoticeContent");
     const c = inp.value.trim();
     if(!c){alert("填写公告");return;}
-    const {error} = await supabase.from("dyfc_notices").insert([{content:c}]);
+    const {error} = await supabaseClient.from("dyfc_notices").insert([{content:c}]);
     if(error){alert(error.message);return;}
     inp.value="";
     await renderNoticeManage();
@@ -753,14 +752,14 @@ async function addNotice(){
 async function editNotice(id,oldText){
     const newVal = prompt("编辑公告",oldText);
     if(newVal===null||!newVal.trim()) return;
-    const {error} = await supabase.from("dyfc_notices").update({content:newVal.trim()}).eq("id",id);
+    const {error} = await supabaseClient.from("dyfc_notices").update({content:newVal.trim()}).eq("id",id);
     if(error){alert(error.message);return;}
     await renderNoticeManage();
     await renderHomeNotice();
 }
 async function deleteNotice(id){
     if(!confirm("确定删除？")) return;
-    const {error} = await supabase.from("dyfc_notices").delete().eq("id",id);
+    const {error} = await supabaseClient.from("dyfc_notices").delete().eq("id",id);
     if(error){alert(error.message);return;}
     await renderNoticeManage();
     await renderHomeNotice();
@@ -769,4 +768,3 @@ function backToAdmin(){hideAll();document.getElementById("adminPage").style.disp
 </script>
 </body>
 </html>
-
