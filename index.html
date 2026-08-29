@@ -71,6 +71,21 @@
             color:#fff;
         }
         .btn-danger:hover{background:#ff8585;}
+
+        /* 修复！补上缺失的submit-btn，登录注册按钮靠这个才能点击 */
+        .submit-btn{
+            width:100%;
+            padding:12px;
+            margin-top:10px;
+            background:#ffcc00;
+            color:#000;
+            border:none;
+            border-radius:8px;
+            font-size:16px;
+            cursor:pointer;
+        }
+        .submit-btn:hover{background:#ffdd44;}
+
         .login-box,.register-box{
             max-width:420px;
             margin:60px auto;
@@ -628,7 +643,6 @@ async function register(){
     showLogin();
 }
 
-//登录修复：使用maybeSingle，不再用single()防止直接崩溃
 async function login(){
     const username = document.getElementById("loginUsername").value.trim();
     const pwd = document.getElementById("loginPwd").value;
@@ -695,7 +709,7 @@ async function showMyOrder(){
     document.getElementById("userPage").style.display="block";
     document.getElementById("myOrderPage").style.display="block";
     const tbody = document.getElementById("myOrderBody");
-    const {data,error} = await supabase.from("dyfc_orders").select("*").eq("username",currentUsername).order("create_at",{ascending:false);
+    const {data,error} = await supabase.from("dyfc_orders").select("*").eq("username",currentUsername).order("create_at",{ascending:false});
     if(error){alert("加载订单失败："+error.message);return;}
     if(!data||data.length===0){
         tbody.innerHTML="<tr><td colspan='5' class='empty-tip'>暂无购票记录</td>";
@@ -722,7 +736,7 @@ async function showOrderList(){
     document.getElementById("adminPage").style.display="block";
     document.getElementById("orderListPage").style.display="block";
     const tbody = document.getElementById("orderTableBody");
-    const {data,error} = await supabase.from("dyfc_orders").select("*").order("create_at",{ascending:false);
+    const {data,error} = await supabase.from("dyfc_orders").select("*").order("create_at",{ascending:false});
     if(error){alert("加载订单失败："+error.message);return;}
     if(!data||data.length===0){
         tbody.innerHTML="<tr><td colspan='6' class='empty-tip'>暂无订单</td>";
@@ -753,7 +767,7 @@ async function showNoticeManage(){
 async function renderNoticeManage(){
     const box = document.getElementById("noticeManageList");
     box.innerHTML="";
-    const {data,error} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false);
+    const {data,error} = await supabase.from("dyfc_notices").select("*").order("create_at",{ascending:false});
     console.log("管理页公告",data,error);
     if(error){alert("公告加载失败："+error.message);console.error(error);return;}
     if(!data) return;
