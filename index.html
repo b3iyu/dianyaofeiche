@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== 完整样式（同上，此处略） ===== */
+        /* ===== 完整样式（同上） ===== */
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Microsoft Yahei",sans-serif; }
         body { background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff; min-height:100vh; }
         header { background:rgba(0,0,0,0.6); padding:15px 30px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
@@ -101,9 +101,7 @@
     </style>
 </head>
 <body>
-
     <div id="toast" class="toast"></div>
-
     <header>
         <div class="logo"><img src="dy.png" alt="电摇飞车" /><span>电摇飞车</span></div>
         <div class="nav">
@@ -112,10 +110,8 @@
             <a onclick="showRegister()">注册</a>
         </div>
     </header>
-
     <div class="container">
-
-        <!-- ===== 首页 ===== -->
+        <!-- 首页 -->
         <div id="home" class="home-box">
             <h1>电摇飞车</h1>
             <p>超刺激竞速游戏官方网站</p>
@@ -128,8 +124,7 @@
                 <div id="homeNoticeList"></div>
             </div>
         </div>
-
-        <!-- ===== 登录 ===== -->
+        <!-- 登录 -->
         <div id="login" class="login-box">
             <h2>账号登录</h2>
             <input type="text" id="loginUsername" placeholder="输入用户名" />
@@ -138,8 +133,7 @@
             <button class="submit-btn" onclick="login()">登录</button>
             <div class="tip" onclick="showRegister()">没有账号？去注册</div>
         </div>
-
-        <!-- ===== 注册 ===== -->
+        <!-- 注册 -->
         <div id="register" class="register-box">
             <h2>新用户注册</h2>
             <input type="text" id="regUsername" placeholder="设置用户名" />
@@ -148,8 +142,7 @@
             <button class="submit-btn" onclick="register()">完成注册</button>
             <div class="tip" onclick="showLogin()">已有账号？去登录</div>
         </div>
-
-        <!-- ===== 用户面板 ===== -->
+        <!-- 用户面板 -->
         <div id="userPage" class="user-panel">
             <div class="user-header"><h2>🚗 玩家中心</h2><button class="logout-btn" onclick="logout()">退出登录</button></div>
             <div class="notice-box"><h3>📢 最新公告 <span class="refresh-btn" onclick="renderUserNotice()">⟳ 刷新</span></h3><div id="userNoticeList"></div></div>
@@ -159,8 +152,7 @@
                 <div class="menu-card" onclick="showToast('功能开发中，敬请期待','info')"><h3>👤 个人信息</h3><p>修改账号资料</p></div>
             </div>
         </div>
-
-        <!-- ===== 站点 ===== -->
+        <!-- 站点 -->
         <div id="stationPage" class="station-page">
             <button class="back-btn" onclick="backToUser()">← 返回</button>
             <h3 class="page-title">选择乘车站点</h3>
@@ -169,8 +161,7 @@
                 <div class="station-item" onclick="showTicketPage()"><span>公园路小学（东）</span><span class="status-tag status-open">正常营业</span></div>
             </div>
         </div>
-
-        <!-- ===== 票种 ===== -->
+        <!-- 票种 -->
         <div id="ticketPage" class="ticket-page">
             <button class="back-btn" onclick="showStationPage()">← 返回站点</button>
             <h3 class="page-title">选择票种 - 公园路小学（东）</h3>
@@ -180,8 +171,7 @@
                 <div class="ticket-item" onclick="showBuyPage('1月票')"><h4>1月票</h4><p>整月不限次数畅玩</p></div>
             </div>
         </div>
-
-        <!-- ===== 购票 ===== -->
+        <!-- 购票 -->
         <div id="buyPage" class="buy-page">
             <button class="back-btn" onclick="showTicketPage()">← 返回票种</button>
             <div class="buy-form">
@@ -191,20 +181,17 @@
                 <button class="submit-btn" onclick="submitOrder()">提交订单</button>
             </div>
         </div>
-
-        <!-- ===== 成功 ===== -->
+        <!-- 成功 -->
         <div id="orderSuccess" class="order-success-page">
             <div class="order-success"><h3 style="color:#2ecc71;">✅ 购票成功！</h3><p>您的订单号：</p><div class="order-no" id="orderNo"></div><p>请妥善保管订单号，到站出示即可</p><button class="btn" style="margin-top:20px;" onclick="backToUser()">返回中心</button></div>
         </div>
-
-        <!-- ===== 我的订单 ===== -->
+        <!-- 我的订单 -->
         <div id="myOrderPage" class="my-order-page">
             <button class="back-btn" onclick="backToUser()">← 返回</button>
             <h3 class="page-title">我的购票订单</h3>
             <div style="overflow-x:auto;"><table class="order-table"><thead><tr><th>票种</th><th>学号</th><th>订单号</th><th>购票站点</th><th>下单时间</th></tr></thead><tbody id="myOrderBody"></tbody></table></div>
         </div>
-
-        <!-- ===== 管理员面板 ===== -->
+        <!-- 管理员面板 -->
         <div id="adminPage" class="admin-panel">
             <div class="admin-header"><h2>👑 管理员控制面板</h2><button class="logout-btn" onclick="logout()">退出登录</button></div>
             <div class="admin-menu">
@@ -213,15 +200,13 @@
                 <div class="menu-card" onclick="showToast('功能开发中','info')"><h3>⚙️ 系统设置</h3><p>站点和票种配置</p></div>
             </div>
         </div>
-
-        <!-- ===== 订单列表（管理员） ===== -->
+        <!-- 订单列表（管理员） -->
         <div id="orderListPage" class="order-list-page">
             <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
             <h3 class="page-title">全部预定订单</h3>
             <div style="overflow-x:auto;"><table class="order-table"><thead><tr><th>票种</th><th>学号</th><th>订单号</th><th>购票站点</th><th>下单账号</th><th>下单时间</th></tr></thead><tbody id="orderTableBody"></tbody></table></div>
         </div>
-
-        <!-- ===== 公告管理（管理员） ===== -->
+        <!-- 公告管理（管理员） -->
         <div id="noticeManagePage" class="notice-manage-page">
             <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
             <h3 class="page-title">📢 公告管理</h3>
@@ -229,7 +214,6 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;"><span style="color:#aaa; font-size:14px;">共 <span id="noticeCount">0</span> 条公告</span><button class="btn btn-sm btn-outline" onclick="renderNoticeManage()">⟳ 刷新列表</button></div>
             <div id="noticeManageList"></div>
         </div>
-
     </div>
 
     <script>
@@ -239,7 +223,6 @@
         const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
         const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
 
-        // 使用不同的变量名，避免与任何全局 supabase 冲突
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // ---------- 全局状态 ----------
@@ -325,7 +308,7 @@
         function showRegister() { hideAll(); document.getElementById('register').style.display = 'block'; }
 
         // ============================================================
-        // 2. 公告渲染（全部使用 supabaseClient）
+        // 2. 公告渲染（字段名改为 create_at）
         // ============================================================
 
         async function renderHomeNotice() {
@@ -335,7 +318,7 @@
                 const { data, error } = await supabaseClient
                     .from('dyfc_notices')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('create_at', { ascending: false });  // 修正字段名
 
                 if (error) {
                     console.error('[首页公告] 查询失败:', error);
@@ -350,7 +333,7 @@
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'notice-item';
-                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+                    const time = item.create_at ? new Date(item.create_at).toLocaleString() : '';
                     div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
                     box.appendChild(div);
                 });
@@ -367,7 +350,7 @@
                 const { data, error } = await supabaseClient
                     .from('dyfc_notices')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('create_at', { ascending: false });
 
                 if (error) {
                     console.error('[用户公告] 查询失败:', error);
@@ -382,7 +365,7 @@
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'notice-item';
-                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+                    const time = item.create_at ? new Date(item.create_at).toLocaleString() : '';
                     div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
                     box.appendChild(div);
                 });
@@ -400,7 +383,7 @@
                 const { data, error } = await supabaseClient
                     .from('dyfc_notices')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('create_at', { ascending: false });
 
                 if (error) {
                     console.error('[公告管理] 查询失败:', error);
@@ -418,7 +401,7 @@
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'notice-item-manage';
-                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+                    const time = item.create_at ? new Date(item.create_at).toLocaleString() : '';
                     div.innerHTML = `
                         <div class="notice-content"><strong>${item.content}</strong>${time ? `<span style="color:#888;font-size:12px;margin-left:10px;">${time}</span>` : ''}</div>
                         <div class="notice-actions">
@@ -440,7 +423,7 @@
         }
 
         // ============================================================
-        // 3. 公告 CRUD（全部使用 supabaseClient）
+        // 3. 公告 CRUD（全部使用 create_at）
         // ============================================================
 
         async function addNotice() {
@@ -450,7 +433,7 @@
             try {
                 const { error } = await supabaseClient
                     .from('dyfc_notices')
-                    .insert([{ content, created_at: new Date().toISOString() }]);
+                    .insert([{ content, create_at: new Date().toISOString() }]);
 
                 if (error) {
                     console.error('[添加公告] 失败:', error);
@@ -518,7 +501,7 @@
         }
 
         // ============================================================
-        // 4. 用户认证（全部使用 supabaseClient）
+        // 4. 用户认证（不变）
         // ============================================================
 
         async function register() {
@@ -593,7 +576,7 @@
         }
 
         // ============================================================
-        // 5. 购票流程（全部使用 supabaseClient）
+        // 5. 购票流程（全部使用 create_at）
         // ============================================================
 
         function showStationPage() { hideAll(); document.getElementById('userPage').style.display = 'block'; document.getElementById('stationPage').style.display = 'block'; }
@@ -617,7 +600,7 @@
                 station: '公园路小学（东）',
                 order_no: orderNo,
                 username: currentUsername,
-                created_at: new Date().toISOString()
+                create_at: new Date().toISOString()   // 修正字段名
             };
             try {
                 const { error } = await supabaseClient.from('dyfc_orders').insert([payload]);
@@ -647,7 +630,7 @@
                     .from('dyfc_orders')
                     .select('*')
                     .eq('username', currentUsername)
-                    .order('created_at', { ascending: false });
+                    .order('create_at', { ascending: false });   // 修正
 
                 if (error) {
                     tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">加载失败：${error.message}</td></tr>`;
@@ -665,7 +648,7 @@
                         <td>${o.name || '-'}</td>
                         <td>${o.order_no || '-'}</td>
                         <td>${o.station || '-'}</td>
-                        <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
+                        <td>${o.create_at ? new Date(o.create_at).toLocaleString() : '-'}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -677,7 +660,7 @@
         function backToUser() { hideAll(); document.getElementById('userPage').style.display = 'block'; renderUserNotice(); }
 
         // ============================================================
-        // 6. 管理员功能（全部使用 supabaseClient）
+        // 6. 管理员功能（全部使用 create_at）
         // ============================================================
 
         async function showOrderList() {
@@ -690,7 +673,7 @@
                 const { data, error } = await supabaseClient
                     .from('dyfc_orders')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('create_at', { ascending: false });
 
                 if (error) {
                     tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">加载失败：${error.message}</td></tr>`;
@@ -709,7 +692,7 @@
                         <td>${o.order_no || '-'}</td>
                         <td>${o.station || '-'}</td>
                         <td>${o.username || '-'}</td>
-                        <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
+                        <td>${o.create_at ? new Date(o.create_at).toLocaleString() : '-'}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -753,6 +736,5 @@
         window.renderNoticeManage = renderNoticeManage;
         window.showToast = showToast;
     </script>
-
 </body>
 </html>
