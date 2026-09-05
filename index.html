@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== 全部样式（与之前一致，省略重复） ===== */
+        /* ===== 样式（与之前一致，确保兼容） ===== */
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Microsoft Yahei",sans-serif; }
         body { background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff; min-height:100vh; }
         header { background:rgba(0,0,0,0.6); padding:15px 30px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
@@ -236,8 +236,8 @@
         // ============================================================
         // 1. Supabase 配置（请替换成你自己的）
         // ============================================================
-        const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co/";
-        const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
+        const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U"; // 请替换为您的完整 anon key
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -326,7 +326,7 @@
         function showRegister() { hideAll(); document.getElementById('register').style.display = 'block'; }
 
         // ============================================================
-        // 2. 公告渲染（移除 .order()，手动排序）
+        // 2. 公告渲染（使用 create_at，因为您的公告表列名是 create_at）
         // ============================================================
 
         async function renderHomeNotice() {
@@ -347,7 +347,7 @@
                     box.innerHTML = '<div class="notice-empty">暂无公告</div>';
                     return;
                 }
-                // 手动按 create_at 降序排序
+                // 按 create_at 降序排序
                 data.sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
                 box.innerHTML = '';
                 data.forEach(item => {
@@ -604,7 +604,7 @@
         }
 
         // ============================================================
-        // 5. 购票流程
+        // 5. 购票流程（关键修复：使用 created_at 而非 create_at）
         // ============================================================
 
         function showStationPage() {
@@ -638,7 +638,7 @@
                 station: '公园路小学（东）',
                 order_no: orderNo,
                 username: currentUsername,
-                create_at: new Date().toISOString()
+                created_at: new Date().toISOString()   // ✅ 改为 created_at（匹配您的表）
             };
             try {
                 const { error } = await supabaseClient.from('dyfc_orders').insert([payload]);
@@ -678,7 +678,8 @@
                     tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无购票记录</td></tr>';
                     return;
                 }
-                data.sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+                // 按 created_at 降序排序
+                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 tbody.innerHTML = '';
                 data.forEach(o => {
                     const tr = document.createElement('tr');
@@ -687,7 +688,7 @@
                         <td>${o.name || '-'}</td>
                         <td>${o.order_no || '-'}</td>
                         <td>${o.station || '-'}</td>
-                        <td>${o.create_at ? new Date(o.create_at).toLocaleString() : '-'}</td>
+                        <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -703,7 +704,7 @@
         }
 
         // ============================================================
-        // 6. 管理员功能
+        // 6. 管理员功能（订单列表也使用 created_at）
         // ============================================================
 
         async function showOrderList() {
@@ -726,7 +727,7 @@
                     tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无订单</td></tr>';
                     return;
                 }
-                data.sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 tbody.innerHTML = '';
                 data.forEach(o => {
                     const tr = document.createElement('tr');
@@ -736,7 +737,7 @@
                         <td>${o.order_no || '-'}</td>
                         <td>${o.station || '-'}</td>
                         <td>${o.username || '-'}</td>
-                        <td>${o.create_at ? new Date(o.create_at).toLocaleString() : '-'}</td>
+                        <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
                     `;
                     tbody.appendChild(tr);
                 });
