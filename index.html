@@ -4,10 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>电摇飞车 - 官方网站</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== 样式（与之前一致，确保兼容） ===== */
         * { margin:0; padding:0; box-sizing:border-box; font-family:"Microsoft Yahei",sans-serif; }
         body { background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff; min-height:100vh; }
         header { background:rgba(0,0,0,0.6); padding:15px 30px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
@@ -26,6 +24,8 @@
         .btn-sm { padding:6px 14px; font-size:14px; margin:0 4px; }
         .btn-danger { background:#ff6b6b; color:#fff; }
         .btn-danger:hover { background:#ff8585; }
+        .btn-success { background:#2ecc71; color:#fff; }
+        .btn-success:hover { background:#3ee884; }
         .btn-outline { background:transparent; border:1px solid #ffcc00; color:#ffcc00; }
         .btn-outline:hover { background:rgba(255,204,0,0.15); }
         .submit-btn { width:100%; padding:12px; margin-top:10px; background:#ffcc00; color:#000; border:none; border-radius:8px; font-size:16px; cursor:pointer; }
@@ -79,7 +79,7 @@
         .admin-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:10px; }
         .admin-header h2 { color:#ffcc00; }
         .admin-menu { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px; margin-bottom:30px; }
-        .order-list-page, .notice-manage-page { display:none; background:rgba(255,255,255,0.08); padding:30px; border-radius:12px; margin-top:20px; }
+        .order-list-page, .notice-manage-page, .blacklist-page { display:none; background:rgba(255,255,255,0.08); padding:30px; border-radius:12px; margin-top:20px; }
         .notice-item-manage { background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
         .notice-content { flex:1; min-width:120px; }
         .notice-actions { display:flex; gap:8px; flex-wrap:wrap; }
@@ -96,6 +96,9 @@
         @keyframes fadeInUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
         .toast.success { border-left-color:#2ecc71; }
         .toast.error { border-left-color:#ff6b6b; }
+        .blacklist-badge { padding:3px 10px; border-radius:20px; font-size:12px; }
+        .badge-black { background:#ff6b6b; color:#fff; }
+        .badge-normal { background:#2ecc71; color:#fff; }
         @media (max-width:600px) { header { flex-direction:column; align-items:stretch; text-align:center; } .nav { display:flex; justify-content:center; flex-wrap:wrap; } .nav a { margin:4px 8px; } .home-box h1 { font-size:36px; } .user-menu, .admin-menu { grid-template-columns:1fr 1fr; } .ticket-list { grid-template-columns:1fr; } .order-table { font-size:13px; } .order-table th, .order-table td { padding:8px 4px; } }
         @media (max-width:400px) { .user-menu, .admin-menu { grid-template-columns:1fr; } }
     </style>
@@ -210,7 +213,7 @@
             <div class="admin-menu">
                 <div class="menu-card" onclick="showOrderList()"><h3>📋 预定管理</h3><p>查看所有用户购票订单</p></div>
                 <div class="menu-card" onclick="showNoticeManage()"><h3>📢 公告管理</h3><p>发布、编辑、删除网站公告</p></div>
-                <div class="menu-card" onclick="showToast('功能开发中','info')"><h3>⚙️ 系统设置</h3><p>站点和票种配置</p></div>
+                <div class="menu-card" onclick="showBlacklistManage()"><h3>🚫 黑名单管理</h3><p>禁止或解禁用户登录</p></div>
             </div>
         </div>
 
@@ -230,15 +233,34 @@
             <div id="noticeManageList"></div>
         </div>
 
+        <!-- ===== 黑名单管理（管理员） ===== -->
+        <div id="blacklistPage" class="blacklist-page">
+            <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
+            <h3 class="page-title">🚫 用户黑名单管理</h3>
+            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">被拉黑的用户将无法登录账号</p>
+            <div style="overflow-x:auto;">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blacklistBody"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
         // ============================================================
-        // 1. Supabase 配置（请替换成你自己的）
+        // 1. Supabase 配置（⚠️ 请替换为您的完整 anon key）
         // ============================================================
-        const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U"; // 请替换为您的完整 anon key
-
+        const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co/rest/";
+        const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // ---------- 全局状态 ----------
@@ -247,7 +269,7 @@
         let currentRole = "user";
         let toastTimer = null;
 
-        // ---------- Toast ----------
+        // ---------- Toast 提示 ----------
         function showToast(msg, type = 'info', duration = 3000) {
             const el = document.getElementById('toast');
             if (!el) return;
@@ -290,8 +312,18 @@
             if (!raw) return;
             try {
                 const userObj = JSON.parse(raw);
-                currentUsername = userObj.username || '';
-                currentRole = userObj.role || 'user';
+                // 重新检查黑名单状态
+                const { data } = await supabaseClient
+                    .from('app_users')
+                    .select('username, role, is_blacklisted')
+                    .eq('username', userObj.username)
+                    .maybeSingle();
+                if (!data || data.is_blacklisted) {
+                    localStorage.removeItem("dyfc_user");
+                    return;
+                }
+                currentUsername = data.username;
+                currentRole = data.role || 'user';
                 hideAll();
                 if (currentRole === "admin") {
                     document.getElementById("adminPage").style.display = "block";
@@ -306,15 +338,8 @@
 
         // ---------- 页面切换 ----------
         function hideAll() {
-            const ids = [
-                'home', 'login', 'register', 'userPage', 'stationPage',
-                'ticketPage', 'buyPage', 'orderSuccess', 'myOrderPage',
-                'adminPage', 'orderListPage', 'noticeManagePage'
-            ];
-            ids.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = 'none';
-            });
+            const ids = ['home','login','register','userPage','stationPage','ticketPage','buyPage','orderSuccess','myOrderPage','adminPage','orderListPage','noticeManagePage','blacklistPage'];
+            ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
             const loginError = document.getElementById('loginError');
             const regError = document.getElementById('regError');
             if (loginError) loginError.innerText = '';
@@ -326,39 +351,29 @@
         function showRegister() { hideAll(); document.getElementById('register').style.display = 'block'; }
 
         // ============================================================
-        // 2. 公告渲染（使用 create_at，因为您的公告表列名是 create_at）
+        // 2. 公告渲染
         // ============================================================
-
         async function renderHomeNotice() {
             const box = document.getElementById('homeNoticeList');
             if (!box) return;
             box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
             try {
-                const { data, error } = await supabaseClient
-                    .from('dyfc_notices')
-                    .select('*');
-
+                const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
                 if (error) {
-                    console.error('[首页公告] 查询失败:', error);
                     box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`;
                     return;
                 }
-                if (!data || data.length === 0) {
-                    box.innerHTML = '<div class="notice-empty">暂无公告</div>';
-                    return;
-                }
-                // 按 create_at 降序排序
-                data.sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+                if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告</div>'; return; }
+                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 box.innerHTML = '';
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'notice-item';
-                    const time = item.create_at ? new Date(item.create_at).toLocaleString() : '';
+                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
                     div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
                     box.appendChild(div);
                 });
             } catch (err) {
-                console.error('[首页公告] 异常:', err);
                 box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`;
             }
         }
@@ -368,30 +383,19 @@
             if (!box) return;
             box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
             try {
-                const { data, error } = await supabaseClient
-                    .from('dyfc_notices')
-                    .select('*');
-
-                if (error) {
-                    console.error('[用户公告] 查询失败:', error);
-                    box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`;
-                    return;
-                }
-                if (!data || data.length === 0) {
-                    box.innerHTML = '<div class="notice-empty">暂无公告</div>';
-                    return;
-                }
-                data.sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+                const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
+                if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; return; }
+                if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告</div>'; return; }
+                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 box.innerHTML = '';
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'notice-item';
-                    const time = item.create_at ? new Date(item.create_at).toLocaleString() : '';
+                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
                     div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
                     box.appendChild(div);
                 });
             } catch (err) {
-                console.error('[用户公告] 异常:', err);
                 box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`;
             }
         }
@@ -402,33 +406,18 @@
             if (!box) return;
             box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
             try {
-                const { data, error } = await supabaseClient
-                    .from('dyfc_notices')
-                    .select('*');
-
-                if (error) {
-                    console.error('[公告管理] 查询失败:', error);
-                    box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`;
-                    if (countEl) countEl.textContent = '0';
-                    return;
-                }
-                if (!data || data.length === 0) {
-                    box.innerHTML = '<div class="notice-empty">暂无公告，点击上方「发布新公告」添加</div>';
-                    if (countEl) countEl.textContent = '0';
-                    return;
-                }
-                data.sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+                const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
+                if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; if (countEl) countEl.textContent = '0'; return; }
+                if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告，点击上方「发布新公告」添加</div>'; if (countEl) countEl.textContent = '0'; return; }
+                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 if (countEl) countEl.textContent = data.length;
                 box.innerHTML = '';
                 data.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'notice-item-manage';
-                    const time = item.create_at ? new Date(item.create_at).toLocaleString() : '';
+                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
                     div.innerHTML = `
-                        <div class="notice-content">
-                            <strong>${item.content}</strong>
-                            ${time ? `<span style="color:#888;font-size:12px;margin-left:10px;">${time}</span>` : ''}
-                        </div>
+                        <div class="notice-content"><strong>${item.content}</strong>${time ? `<span style="color:#888;font-size:12px;margin-left:10px;">${time}</span>` : ''}</div>
                         <div class="notice-actions">
                             <button class="btn btn-sm" onclick="editNotice(${item.id}, '${escapeHtml(item.content)}')">编辑</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteNotice(${item.id})">删除</button>
@@ -437,7 +426,6 @@
                     box.appendChild(div);
                 });
             } catch (err) {
-                console.error('[公告管理] 异常:', err);
                 box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`;
                 if (countEl) countEl.textContent = '0';
             }
@@ -450,31 +438,20 @@
         // ============================================================
         // 3. 公告 CRUD
         // ============================================================
-
         async function addNotice() {
             const inp = document.getElementById('newNoticeContent');
             if (!inp) return;
             const content = inp.value.trim();
             if (!content) { showToast('请输入公告内容', 'error'); return; }
             try {
-                const { error } = await supabaseClient
-                    .from('dyfc_notices')
-                    .insert([{ content, create_at: new Date().toISOString() }]);
-
-                if (error) {
-                    console.error('[添加公告] 失败:', error);
-                    showToast('发布公告失败：' + error.message, 'error');
-                    return;
-                }
+                const { error } = await supabaseClient.from('dyfc_notices').insert([{ content, created_at: new Date().toISOString() }]);
+                if (error) { showToast('发布公告失败：' + error.message, 'error'); return; }
                 inp.value = '';
                 showToast('✅ 公告发布成功！', 'success');
                 await renderNoticeManage();
                 await renderHomeNotice();
                 await renderUserNotice();
-            } catch (err) {
-                console.error('[添加公告] 异常:', err);
-                showToast('发布公告异常：' + err.message, 'error');
-            }
+            } catch (err) { showToast('发布公告异常：' + err.message, 'error'); }
         }
 
         async function editNotice(id, oldText) {
@@ -483,53 +460,30 @@
             const trimmed = newVal.trim();
             if (!trimmed) { showToast('公告内容不能为空', 'error'); return; }
             try {
-                const { error } = await supabaseClient
-                    .from('dyfc_notices')
-                    .update({ content: trimmed })
-                    .eq('id', id);
-
-                if (error) {
-                    console.error('[编辑公告] 失败:', error);
-                    showToast('编辑失败：' + error.message, 'error');
-                    return;
-                }
+                const { error } = await supabaseClient.from('dyfc_notices').update({ content: trimmed }).eq('id', id);
+                if (error) { showToast('编辑失败：' + error.message, 'error'); return; }
                 showToast('✅ 公告已更新', 'success');
                 await renderNoticeManage();
                 await renderHomeNotice();
                 await renderUserNotice();
-            } catch (err) {
-                console.error('[编辑公告] 异常:', err);
-                showToast('编辑异常：' + err.message, 'error');
-            }
+            } catch (err) { showToast('编辑异常：' + err.message, 'error'); }
         }
 
         async function deleteNotice(id) {
             if (!confirm('确定要删除这条公告吗？')) return;
             try {
-                const { error } = await supabaseClient
-                    .from('dyfc_notices')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) {
-                    console.error('[删除公告] 失败:', error);
-                    showToast('删除失败：' + error.message, 'error');
-                    return;
-                }
+                const { error } = await supabaseClient.from('dyfc_notices').delete().eq('id', id);
+                if (error) { showToast('删除失败：' + error.message, 'error'); return; }
                 showToast('🗑️ 公告已删除', 'success');
                 await renderNoticeManage();
                 await renderHomeNotice();
                 await renderUserNotice();
-            } catch (err) {
-                console.error('[删除公告] 异常:', err);
-                showToast('删除异常：' + err.message, 'error');
-            }
+            } catch (err) { showToast('删除异常：' + err.message, 'error'); }
         }
 
         // ============================================================
         // 4. 用户认证
         // ============================================================
-
         async function register() {
             const username = document.getElementById('regUsername').value.trim();
             const pwd = document.getElementById('regPwd').value.trim();
@@ -540,10 +494,7 @@
             if (pwd.length < 6) { errTip.innerText = '密码至少6位'; return; }
             try {
                 const hashPwd = await sha256(pwd);
-                const { error } = await supabaseClient
-                    .from('app_users')
-                    .insert([{ username, password_hash: hashPwd, role: 'user' }]);
-
+                const { error } = await supabaseClient.from('app_users').insert([{ username, password_hash: hashPwd, role: 'user', is_blacklisted: false }]);
                 if (error) {
                     if (error.code === '23505') errTip.innerText = '用户名已存在';
                     else errTip.innerText = error.message;
@@ -551,10 +502,7 @@
                 }
                 showToast('🎉 注册成功，请登录', 'success');
                 showLogin();
-            } catch (err) {
-                errTip.innerText = '注册异常：' + err.message;
-                console.error('注册错误:', err);
-            }
+            } catch (err) { errTip.innerText = '注册异常：' + err.message; }
         }
 
         async function login() {
@@ -568,15 +516,14 @@
                 const hashPwd = await sha256(pwd);
                 const { data, error } = await supabaseClient
                     .from('app_users')
-                    .select('username, role')
+                    .select('username, role, is_blacklisted')
                     .eq('username', username)
                     .eq('password_hash', hashPwd)
                     .maybeSingle();
 
-                if (error || !data) {
-                    errTip.innerText = '用户名或者密码错误';
-                    return;
-                }
+                if (error || !data) { errTip.innerText = '用户名或者密码错误'; return; }
+                if (data.is_blacklisted) { errTip.innerText = '🚫 该账号已被拉黑，禁止登录'; return; }
+
                 currentUsername = data.username;
                 currentRole = data.role || 'user';
                 localStorage.setItem('dyfc_user', JSON.stringify(data));
@@ -589,10 +536,7 @@
                     await renderUserNotice();
                     showToast('🚗 欢迎回来，' + currentUsername, 'success');
                 }
-            } catch (err) {
-                errTip.innerText = '登录异常：' + err.message;
-                console.error('登录错误:', err);
-            }
+            } catch (err) { errTip.innerText = '登录异常：' + err.message; }
         }
 
         function logout() {
@@ -604,57 +548,34 @@
         }
 
         // ============================================================
-        // 5. 购票流程（关键修复：使用 created_at 而非 create_at）
+        // 5. 购票流程
         // ============================================================
-
-        function showStationPage() {
-            hideAll();
-            document.getElementById('userPage').style.display = 'block';
-            document.getElementById('stationPage').style.display = 'block';
-        }
-
-        function showTicketPage() {
-            hideAll();
-            document.getElementById('userPage').style.display = 'block';
-            document.getElementById('ticketPage').style.display = 'block';
-        }
-
-        function showBuyPage(ticket) {
-            currentTicketType = ticket;
-            document.getElementById('selectedTicket').innerText = ticket;
-            hideAll();
-            document.getElementById('userPage').style.display = 'block';
-            document.getElementById('buyPage').style.display = 'block';
-        }
+        function showStationPage() { hideAll(); document.getElementById('userPage').style.display = 'block'; document.getElementById('stationPage').style.display = 'block'; }
+        function showTicketPage() { hideAll(); document.getElementById('userPage').style.display = 'block'; document.getElementById('ticketPage').style.display = 'block'; }
+        function showBuyPage(ticket) { currentTicketType = ticket; document.getElementById('selectedTicket').innerText = ticket; hideAll(); document.getElementById('userPage').style.display = 'block'; document.getElementById('buyPage').style.display = 'block'; }
 
         async function submitOrder() {
             const buyerName = document.getElementById('buyerName').value.trim();
             if (!buyerName) { showToast('请填写学号', 'error'); return; }
-            const orderNo = 'DYFC' + Date.now().toString().slice(-6) +
-                Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            const orderNo = 'DYFC' + Date.now().toString().slice(-6) + Math.floor(Math.random()*1000).toString().padStart(3,'0');
             const payload = {
                 ticket: currentTicketType,
                 name: buyerName,
                 station: '公园路小学（东）',
                 order_no: orderNo,
                 username: currentUsername,
-                created_at: new Date().toISOString()   // ✅ 改为 created_at（匹配您的表）
+                created_at: new Date().toISOString()
             };
             try {
                 const { error } = await supabaseClient.from('dyfc_orders').insert([payload]);
-                if (error) {
-                    showToast('下单失败：' + error.message, 'error');
-                    return;
-                }
+                if (error) { showToast('下单失败：' + error.message, 'error'); return; }
                 document.getElementById('orderNo').innerText = orderNo;
                 document.getElementById('buyerName').value = '';
                 hideAll();
                 document.getElementById('userPage').style.display = 'block';
                 document.getElementById('orderSuccess').style.display = 'block';
                 showToast('✅ 购票成功！', 'success');
-            } catch (err) {
-                showToast('下单异常：' + err.message, 'error');
-            }
+            } catch (err) { showToast('下单异常：' + err.message, 'error'); }
         }
 
         async function showMyOrder() {
@@ -665,48 +586,24 @@
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">加载中...</td></tr>';
             try {
-                const { data, error } = await supabaseClient
-                    .from('dyfc_orders')
-                    .select('*')
-                    .eq('username', currentUsername);
-
-                if (error) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">加载失败：${error.message}</td></tr>`;
-                    return;
-                }
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无购票记录</td></tr>';
-                    return;
-                }
-                // 按 created_at 降序排序
+                const { data, error } = await supabaseClient.from('dyfc_orders').select('*').eq('username', currentUsername);
+                if (error) { tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
+                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无购票记录</td></tr>'; return; }
                 data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 tbody.innerHTML = '';
                 data.forEach(o => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${o.ticket || '-'}</td>
-                        <td>${o.name || '-'}</td>
-                        <td>${o.order_no || '-'}</td>
-                        <td>${o.station || '-'}</td>
-                        <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
-                    `;
+                    tr.innerHTML = `<td>${o.ticket||'-'}</td><td>${o.name||'-'}</td><td>${o.order_no||'-'}</td><td>${o.station||'-'}</td><td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>`;
                     tbody.appendChild(tr);
                 });
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">异常：${err.message}</td></tr>`;
-            }
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">异常：${err.message}</td></tr>`; }
         }
 
-        function backToUser() {
-            hideAll();
-            document.getElementById('userPage').style.display = 'block';
-            renderUserNotice();
-        }
+        function backToUser() { hideAll(); document.getElementById('userPage').style.display = 'block'; renderUserNotice(); }
 
         // ============================================================
-        // 6. 管理员功能（订单列表也使用 created_at）
+        // 6. 管理员：订单列表
         // ============================================================
-
         async function showOrderList() {
             hideAll();
             document.getElementById('adminPage').style.display = 'block';
@@ -715,51 +612,85 @@
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">加载中...</td></tr>';
             try {
-                const { data, error } = await supabaseClient
-                    .from('dyfc_orders')
-                    .select('*');
-
-                if (error) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">加载失败：${error.message}</td></tr>`;
-                    return;
-                }
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无订单</td></tr>';
-                    return;
-                }
+                const { data, error } = await supabaseClient.from('dyfc_orders').select('*');
+                if (error) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
+                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无订单</td></tr>'; return; }
                 data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 tbody.innerHTML = '';
                 data.forEach(o => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${o.ticket || '-'}</td>
-                        <td>${o.name || '-'}</td>
-                        <td>${o.order_no || '-'}</td>
-                        <td>${o.station || '-'}</td>
-                        <td>${o.username || '-'}</td>
-                        <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
-                    `;
+                    tr.innerHTML = `<td>${o.ticket||'-'}</td><td>${o.name||'-'}</td><td>${o.order_no||'-'}</td><td>${o.station||'-'}</td><td>${o.username||'-'}</td><td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>`;
                     tbody.appendChild(tr);
                 });
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">异常：${err.message}</td></tr>`;
-            }
-        }
-
-        async function showNoticeManage() {
-            hideAll();
-            document.getElementById('adminPage').style.display = 'block';
-            document.getElementById('noticeManagePage').style.display = 'block';
-            await renderNoticeManage();
-        }
-
-        function backToAdmin() {
-            hideAll();
-            document.getElementById('adminPage').style.display = 'block';
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">异常：${err.message}</td></tr>`; }
         }
 
         // ============================================================
-        // 7. 暴露全局函数
+        // 7. 管理员：公告管理
+        // ============================================================
+        async function showNoticeManage() { hideAll(); document.getElementById('adminPage').style.display = 'block'; document.getElementById('noticeManagePage').style.display = 'block'; await renderNoticeManage(); }
+
+        // ============================================================
+        // 8. 管理员：黑名单管理
+        // ============================================================
+        async function showBlacklistManage() {
+            hideAll();
+            document.getElementById('adminPage').style.display = 'block';
+            document.getElementById('blacklistPage').style.display = 'block';
+            await renderBlacklist();
+        }
+
+        async function renderBlacklist() {
+            const tbody = document.getElementById('blacklistBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-tip">加载中...</td></tr>';
+            try {
+                const { data, error } = await supabaseClient
+                    .from('app_users')
+                    .select('id, username, role, is_blacklisted');
+                if (error) { tbody.innerHTML = `<tr><td colspan="4" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
+                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无用户</td></tr>'; return; }
+                data.sort((a, b) => a.id - b.id);
+                tbody.innerHTML = '';
+                data.forEach(u => {
+                    const isBlack = u.is_blacklisted;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${u.username}</td>
+                        <td>${u.role === 'admin' ? '👑 管理员' : '普通用户'}</td>
+                        <td><span class="blacklist-badge ${isBlack ? 'badge-black' : 'badge-normal'}">${isBlack ? '🚫 已拉黑' : '✅ 正常'}</span></td>
+                        <td>
+                            <button class="btn btn-sm ${isBlack ? 'btn-success' : 'btn-danger'}" 
+                                onclick="toggleBlacklist(${u.id}, ${isBlack}, '${u.username}')">
+                                ${isBlack ? '解禁' : '拉黑'}
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="empty-tip">异常：${err.message}</td></tr>`; }
+        }
+
+        async function toggleBlacklist(userId, currentStatus, username) {
+            const newStatus = !currentStatus;
+            const action = newStatus ? '拉黑' : '解禁';
+            if (username === currentUsername) { showToast('不能拉黑自己', 'error'); return; }
+            if (!confirm(`确定要${action}用户「${username}」吗？`)) return;
+            try {
+                const { error } = await supabaseClient
+                    .from('app_users')
+                    .update({ is_blacklisted: newStatus })
+                    .eq('id', userId);
+                if (error) { showToast(`${action}失败：${error.message}`, 'error'); return; }
+                showToast(`✅ 已${action}「${username}」`, 'success');
+                await renderBlacklist();
+            } catch (err) { showToast(`${action}异常：${err.message}`, 'error'); }
+        }
+
+        function backToAdmin() { hideAll(); document.getElementById('adminPage').style.display = 'block'; }
+
+        // ============================================================
+        // 9. 暴露全局函数
         // ============================================================
         window.showHome = showHome;
         window.showLogin = showLogin;
@@ -782,6 +713,9 @@
         window.renderHomeNotice = renderHomeNotice;
         window.renderUserNotice = renderUserNotice;
         window.renderNoticeManage = renderNoticeManage;
+        window.showBlacklistManage = showBlacklistManage;
+        window.renderBlacklist = renderBlacklist;
+        window.toggleBlacklist = toggleBlacklist;
         window.showToast = showToast;
     </script>
 
