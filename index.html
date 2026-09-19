@@ -1265,7 +1265,8 @@ async function renderBlacklist() {
         data.sort((a, b) => a.id - b.id);
         tbody.innerHTML = '';
         data.forEach(u => {
-            const isBlack = u.is_blacklisted && (!u.ban_until || new Date(u.ban_until) > new Date());
+            // 如果封禁已到期，显示为正常
+const isBlack = u.is_blacklisted && (!u.ban_until || new Date(u.ban_until) > new Date());
             const banReason = u.ban_reason || '-';
             let banUntilStr = '-';
             if (u.ban_until) banUntilStr = new Date(u.ban_until).toLocaleString();
