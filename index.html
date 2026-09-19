@@ -100,120 +100,77 @@
         .badge-black { background:#ff6b6b; color:#fff; }
         .badge-normal { background:#2ecc71; color:#fff; }
 
-        /* ===== 论坛 & 个人信息样式 ===== */
-        .forum-page, .post-detail-page, .profile-page {
-            display:none;
-            background:rgba(255,255,255,0.08);
-            padding:30px;
-            border-radius:12px;
-            margin-top:20px;
-        }
-        .post-card {
-            background:rgba(0,0,0,0.2);
-            padding:20px;
+        /* 全屏模式 */
+        body.fullscreen header { display:none !important; }
+        body.fullscreen .user-header,
+        body.fullscreen .user-menu,
+        body.fullscreen .admin-header,
+        body.fullscreen .admin-menu { display:none !important; }
+        body.fullscreen .user-panel > .notice-box { display:none !important; }
+        body.fullscreen .container { margin-top:20px; }
+
+        /* 论坛 */
+        .forum-page, .post-detail-page, .profile-page { display:none; background:rgba(255,255,255,0.08); padding:30px; border-radius:12px; margin-top:20px; }
+
+        .channel-tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .channel-tab { padding:8px 18px; background:rgba(255,255,255,0.08); border-radius:20px; cursor:pointer; font-size:14px; transition:0.2s; border:1px solid transparent; user-select:none; }
+        .channel-tab:hover { background:rgba(255,204,0,0.15); }
+        .channel-tab.active { background:#ffcc00; color:#000; font-weight:bold; border-color:#ffcc00; }
+
+        .channel-rules {
+            background:rgba(255,107,107,0.1);
+            border:1px solid rgba(255,107,107,0.4);
+            border-left:4px solid #ff6b6b;
+            padding:15px 20px;
             border-radius:8px;
-            margin-bottom:15px;
-            border-left:3px solid #ffcc00;
-            transition:0.2s;
+            margin-bottom:20px;
+            font-size:13px;
+            line-height:1.7;
+            color:#ffcccc;
+            white-space:pre-wrap;
         }
+        .channel-rules h4 { color:#ff6b6b; margin-bottom:8px; font-size:14px; }
+
+        .video-embed { margin-top:12px; border-radius:8px; overflow:hidden; background:#000; position:relative; width:100%; aspect-ratio:16/9; }
+        .video-embed iframe { width:100%; height:100%; border:none; display:block; position:absolute; top:0; left:0; }
+        .video-link-btn { display:inline-block; padding:8px 16px; background:rgba(255,204,0,0.15); border:1px solid rgba(255,204,0,0.4); color:#ffcc00; text-decoration:none; border-radius:6px; font-size:13px; margin-top:10px; transition:0.2s; }
+        .video-link-btn:hover { background:rgba(255,204,0,0.25); }
+
+        .post-card { background:rgba(0,0,0,0.2); padding:20px; border-radius:8px; margin-bottom:15px; border-left:3px solid #ffcc00; transition:0.2s; }
         .post-card:hover { background:rgba(0,0,0,0.3); }
-        .post-card.harmonized {
-            opacity:0.7;
-            border-left-color:#ff6b6b;
-            background:rgba(255,107,107,0.08);
-        }
-        .post-header {
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:10px;
-            flex-wrap:wrap;
-            gap:8px;
-        }
-        .post-author {
-            color:#ffcc00;
-            font-weight:bold;
-            font-size:14px;
-        }
+        .post-card.harmonized { opacity:0.7; border-left-color:#ff6b6b; background:rgba(255,107,107,0.08); }
+        .post-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
+        .post-author { color:#ffcc00; font-weight:bold; font-size:14px; }
         .post-author.admin-badge { color:#ffcc00; }
         .post-time { color:#888; font-size:12px; }
-        .post-title {
-            font-size:18px;
-            color:#fff;
-            margin-bottom:8px;
-            cursor:pointer;
-        }
-        .post-title:hover { color:#ffcc00; }
-        .post-content {
-            color:#ccc;
-            font-size:14px;
-            line-height:1.6;
-            word-break:break-word;
-            white-space:pre-wrap;
-        }
-        .post-actions {
-            margin-top:12px;
-            display:flex;
-            gap:8px;
-            flex-wrap:wrap;
-        }
-        .comment-card {
-            background:rgba(0,0,0,0.15);
-            padding:12px 15px;
-            border-radius:8px;
-            margin-bottom:10px;
-            border-left:3px solid rgba(255,204,0,0.5);
-        }
-        .comment-card.harmonized {
-            opacity:0.7;
-            border-left-color:#ff6b6b;
-            background:rgba(255,107,107,0.08);
-        }
-        .comment-header {
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:6px;
-            flex-wrap:wrap;
-            gap:8px;
-        }
-        .comment-content {
-            color:#ccc;
-            font-size:14px;
-            line-height:1.5;
-            word-break:break-word;
-            white-space:pre-wrap;
-        }
-        .harmonized-text {
-            color:#ff6b6b;
-            font-style:italic;
-            font-weight:bold;
-        }
-        .profile-box {
-            max-width:500px;
-            background:rgba(0,0,0,0.2);
-            padding:25px;
-            border-radius:10px;
-        }
+        .post-title-link { font-size:18px; color:#fff; cursor:pointer; display:block; margin-bottom:8px; word-break:break-word; }
+        .post-title-link:hover { color:#ffcc00; }
+        .post-content { color:#ccc; font-size:14px; line-height:1.6; word-break:break-word; white-space:pre-wrap; }
+        .post-actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+        .comment-card { background:rgba(0,0,0,0.15); padding:12px 15px; border-radius:8px; margin-bottom:10px; border-left:3px solid rgba(255,204,0,0.5); }
+        .comment-card.harmonized { opacity:0.7; border-left-color:#ff6b6b; background:rgba(255,107,107,0.08); }
+        .comment-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px; }
+        .comment-content { color:#ccc; font-size:14px; line-height:1.5; word-break:break-word; white-space:pre-wrap; }
+        .harmonized-text { color:#ff6b6b; font-style:italic; font-weight:bold; }
+        .profile-box { max-width:500px; background:rgba(0,0,0,0.2); padding:25px; border-radius:10px; }
         .profile-box p { margin:8px 0; }
         .profile-box hr { border:none; border-top:1px solid rgba(255,255,255,0.1); margin:20px 0; }
         .profile-box h4 { color:#ffcc00; margin-bottom:10px; }
-        .post-title-link {
-            font-size:18px;
-            color:#fff;
-            cursor:pointer;
-            display:block;
-            margin-bottom:8px;
-        }
-        .post-title-link:hover { color:#ffcc00; }
-        .detail-content {
-            background:rgba(0,0,0,0.2);
-            padding:20px;
-            border-radius:8px;
-            margin-bottom:20px;
-            white-space:pre-wrap;
-            line-height:1.6;
-        }
+        .detail-content { background:rgba(0,0,0,0.2); padding:20px; border-radius:8px; margin-bottom:20px; white-space:pre-wrap; line-height:1.6; word-break:break-word; }
+
+        /* 封号弹窗 */
+        .ban-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; display:none; align-items:center; justify-content:center; padding:20px; }
+        .ban-modal.show { display:flex; }
+        .ban-modal-content { max-width:480px; width:100%; background:linear-gradient(135deg,#2a1a1a,#1a1a2e); border:2px solid #ff6b6b; border-radius:15px; padding:35px; text-align:center; box-shadow:0 0 60px rgba(255,107,107,0.5); animation:banIn 0.4s ease; }
+        @keyframes banIn { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+        .ban-modal-icon { font-size:60px; margin-bottom:15px; }
+        .ban-modal-title { color:#ff6b6b; font-size:26px; font-weight:bold; margin-bottom:20px; }
+        .ban-modal-reason { background:rgba(0,0,0,0.4); padding:15px; border-radius:8px; margin-bottom:15px; text-align:left; }
+        .ban-modal-reason p { color:#ccc; margin:5px 0; }
+        .ban-modal-reason strong { color:#ff6b6b; }
+        .ban-modal-btn { width:100%; padding:12px; background:#ff6b6b; color:#fff; border:none; border-radius:8px; font-size:16px; cursor:pointer; margin-top:10px; }
+        .ban-modal-btn:hover { background:#ff8585; }
+
         @media (max-width:600px) { header { flex-direction:column; align-items:stretch; text-align:center; } .nav { display:flex; justify-content:center; flex-wrap:wrap; } .nav a { margin:4px 8px; } .home-box h1 { font-size:36px; } .user-menu, .admin-menu { grid-template-columns:1fr 1fr; } .ticket-list { grid-template-columns:1fr; } .order-table { font-size:13px; } .order-table th, .order-table td { padding:8px 4px; } }
         @media (max-width:400px) { .user-menu, .admin-menu { grid-template-columns:1fr; } }
     </style>
@@ -221,6 +178,22 @@
 <body>
 
     <div id="toast" class="toast"></div>
+
+    <!-- 封号弹窗 -->
+    <div id="banModal" class="ban-modal">
+        <div class="ban-modal-content">
+            <div class="ban-modal-icon">🚫</div>
+            <div class="ban-modal-title">账号已被封禁</div>
+            <div class="ban-modal-reason">
+                <p><strong>封号原因：</strong></p>
+                <p id="banReason">未提供</p>
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.15); margin:10px 0;" />
+                <p><strong>封禁时间：</strong></p>
+                <p id="banUntil">永久封禁</p>
+            </div>
+            <button class="ban-modal-btn" onclick="closeBanModal()">我知道了</button>
+        </div>
+    </div>
 
     <header>
         <div class="logo"><img src="dy.png" alt="电摇飞车" /><span>电摇飞车</span></div>
@@ -234,7 +207,6 @@
 
     <div class="container">
 
-        <!-- ===== 首页 ===== -->
         <div id="home" class="home-box">
             <h1>电摇飞车</h1>
             <p>线下游戏预定官方网站</p>
@@ -248,7 +220,6 @@
             </div>
         </div>
 
-        <!-- ===== 登录 ===== -->
         <div id="login" class="login-box">
             <h2>账号登录</h2>
             <input type="text" id="loginUsername" placeholder="输入用户名" />
@@ -258,7 +229,6 @@
             <div class="tip" onclick="showRegister()">没有账号？去注册</div>
         </div>
 
-        <!-- ===== 注册 ===== -->
         <div id="register" class="register-box">
             <h2>新用户注册</h2>
             <input type="text" id="regUsername" placeholder="设置用户名" />
@@ -269,7 +239,6 @@
             <div class="tip" onclick="showLogin()">已有账号？去登录</div>
         </div>
 
-        <!-- ===== 用户面板 ===== -->
         <div id="userPage" class="user-panel">
             <div class="user-header"><h2>🚗 玩家中心</h2><button class="logout-btn" onclick="logout()">退出登录</button></div>
             <div class="notice-box"><h3>📢 最新公告 <span class="refresh-btn" onclick="renderUserNotice()">⟳ 刷新</span></h3><div id="userNoticeList"></div></div>
@@ -281,7 +250,6 @@
             </div>
         </div>
 
-        <!-- ===== 站点 ===== -->
         <div id="stationPage" class="station-page">
             <button class="back-btn" onclick="backToUser()">← 返回</button>
             <h3 class="page-title">选择乘车站点</h3>
@@ -291,7 +259,6 @@
             </div>
         </div>
 
-        <!-- ===== 票种 ===== -->
         <div id="ticketPage" class="ticket-page">
             <button class="back-btn" onclick="showStationPage()">← 返回站点</button>
             <h3 class="page-title">选择票种 - 公园路小学（东）</h3>
@@ -302,7 +269,6 @@
             </div>
         </div>
 
-        <!-- ===== 购票 ===== -->
         <div id="buyPage" class="buy-page">
             <button class="back-btn" onclick="showTicketPage()">← 返回票种</button>
             <div class="buy-form">
@@ -313,38 +279,50 @@
             </div>
         </div>
 
-        <!-- ===== 成功 ===== -->
         <div id="orderSuccess" class="order-success-page">
             <div class="order-success"><h3 style="color:#2ecc71;">✅ 购票成功！</h3><p>您的订单号：</p><div class="order-no" id="orderNo"></div><p>请妥善保管订单号，到站出示即可</p><button class="btn" style="margin-top:20px;" onclick="backToUser()">返回中心</button></div>
         </div>
 
-        <!-- ===== 我的订单 ===== -->
         <div id="myOrderPage" class="my-order-page">
             <button class="back-btn" onclick="backToUser()">← 返回</button>
             <h3 class="page-title">我的购票订单</h3>
             <div style="overflow-x:auto;"><table class="order-table"><thead><tr><th>票种</th><th>学号</th><th>订单号</th><th>购票站点</th><th>下单时间</th></tr></thead><tbody id="myOrderBody"></tbody></table></div>
         </div>
 
-        <!-- ===== 论坛 ===== -->
+        <!-- 论坛 -->
         <div id="forumPage" class="forum-page">
             <button class="back-btn" onclick="backToUser()">← 返回</button>
             <h3 class="page-title">💬 玩家论坛</h3>
 
+            <div class="channel-tabs" id="channelTabs">
+                <div class="channel-tab active" data-channel="公共频道" onclick="switchChannel('公共频道')">📢 公共频道</div>
+                <div class="channel-tab" data-channel="游戏讨论" onclick="switchChannel('游戏讨论')">🎮 游戏讨论</div>
+                <div class="channel-tab" data-channel="闲聊灌水" onclick="switchChannel('闲聊灌水')">☕ 闲聊灌水</div>
+                <div class="channel-tab" data-channel="建议反馈" onclick="switchChannel('建议反馈')">💡 建议反馈</div>
+            </div>
+
+            <!-- 频道版规 -->
+            <div class="channel-rules" id="channelRules">
+                <h4>📜 本频道版规</h4>
+                <div id="channelRulesContent">加载中...</div>
+            </div>
+
             <div class="add-notice-box">
-                <h4>✍️ 发表新帖</h4>
+                <h4>✍️ 在「<span id="currentChannelName">公共频道</span>」发表新帖</h4>
                 <input type="text" id="newPostTitle" placeholder="帖子标题（最多 50 字）" maxlength="50" />
                 <textarea id="newPostContent" placeholder="帖子内容（最多 500 字）" maxlength="500"></textarea>
+                <input type="text" id="newPostVideo" placeholder="🎬 视频链接（可选，支持 B站 / 抖音）" />
                 <button class="btn" onclick="createPost()" style="margin-top:10px;">发布帖子</button>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
-                <span style="color:#aaa; font-size:14px;">共 <span id="postCount">0</span> 条帖子</span>
+                <span style="color:#aaa; font-size:14px;">本频道共 <span id="postCount">0</span> 条帖子</span>
                 <button class="btn btn-sm btn-outline" onclick="renderForumPosts()">⟳ 刷新列表</button>
             </div>
             <div id="forumPostList"></div>
         </div>
 
-        <!-- ===== 帖子详情 ===== -->
+        <!-- 帖子详情 -->
         <div id="postDetailPage" class="post-detail-page">
             <button class="back-btn" onclick="showForum()">← 返回论坛</button>
             <div id="postDetailContent"></div>
@@ -359,7 +337,7 @@
             <div id="commentList"></div>
         </div>
 
-        <!-- ===== 个人信息 ===== -->
+        <!-- 个人信息 -->
         <div id="profilePage" class="profile-page">
             <button class="back-btn" onclick="backToUser()">← 返回</button>
             <h3 class="page-title">👤 个人信息</h3>
@@ -367,13 +345,11 @@
                 <p><strong>用户名：</strong><span id="profileUsername"></span></p>
                 <p><strong>当前昵称：</strong><span id="profileNickname"></span></p>
                 <p><strong>账号角色：</strong><span id="profileRole"></span></p>
-
                 <hr />
                 <h4>✏️ 设置昵称</h4>
                 <p style="color:#888; font-size:13px; margin-bottom:5px;">设置后论坛中将显示您的昵称；留空则显示用户名。</p>
                 <input type="text" id="nicknameInput" placeholder="输入新昵称（最多 20 字）" maxlength="20" />
                 <button class="submit-btn" onclick="saveNickname()">保存昵称</button>
-
                 <hr />
                 <h4 style="color:#ff6b6b;">⚠️ 危险操作</h4>
                 <p style="color:#aaa; font-size:13px;">注销账号后，您的账号、论坛帖子和评论将全部被删除，且<b style="color:#ff6b6b;">无法恢复</b>！</p>
@@ -381,26 +357,24 @@
             </div>
         </div>
 
-        <!-- ===== 管理员面板 ===== -->
+        <!-- 管理员面板 -->
         <div id="adminPage" class="admin-panel">
             <div class="admin-header"><h2>👑 管理员控制面板</h2><button class="logout-btn" onclick="logout()">退出登录</button></div>
             <div class="admin-menu">
                 <div class="menu-card" onclick="showOrderList()"><h3>📋 预定管理</h3><p>查看所有用户购票订单</p></div>
                 <div class="menu-card" onclick="showNoticeManage()"><h3>📢 公告管理</h3><p>发布、编辑、删除网站公告</p></div>
-                <div class="menu-card" onclick="showBlacklistManage()"><h3>🚫 黑名单管理</h3><p>禁止或解禁用户登录</p></div>
+                <div class="menu-card" onclick="showBlacklistManage()"><h3>🚫 黑名单管理</h3><p>封禁/解禁用户</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 论坛管理</h3><p>和谐违规帖子或评论</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称</p></div>
             </div>
         </div>
 
-        <!-- ===== 订单列表（管理员） ===== -->
         <div id="orderListPage" class="order-list-page">
             <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
             <h3 class="page-title">全部预定订单</h3>
             <div style="overflow-x:auto;"><table class="order-table"><thead><tr><th>票种</th><th>学号</th><th>订单号</th><th>购票站点</th><th>下单账号</th><th>下单时间</th></tr></thead><tbody id="orderTableBody"></tbody></table></div>
         </div>
 
-        <!-- ===== 公告管理（管理员） ===== -->
         <div id="noticeManagePage" class="notice-manage-page">
             <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
             <h3 class="page-title">📢 公告管理</h3>
@@ -409,11 +383,23 @@
             <div id="noticeManageList"></div>
         </div>
 
-        <!-- ===== 黑名单管理（管理员） ===== -->
+        <!-- 黑名单 / 封号管理 -->
         <div id="blacklistPage" class="blacklist-page">
             <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
-            <h3 class="page-title">🚫 用户黑名单管理</h3>
-            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">被拉黑的用户将无法登录账号</p>
+            <h3 class="page-title">🚫 用户封禁管理</h3>
+            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">被拉黑的用户将无法登录，登录时会显示封号原因和时间</p>
+
+            <!-- 封号表单 -->
+            <div class="add-notice-box" style="border-left:4px solid #ff6b6b;">
+                <h4 style="color:#ff6b6b;">🚫 封禁用户</h4>
+                <div class="add-row" style="margin-bottom:10px;">
+                    <input type="text" id="banUsername" placeholder="输入要封禁的用户名（普通用户）" />
+                </div>
+                <textarea id="banReasonInput" placeholder="封号原因（必填）" style="min-height:60px;"></textarea>
+                <input type="text" id="banUntilInput" placeholder="封禁截止时间（选填，格式如 2026-12-31 23:59，留空则永久封禁）" />
+                <button class="btn btn-danger" style="margin-top:10px;" onclick="banUser()">确认封禁</button>
+            </div>
+
             <div style="overflow-x:auto;">
                 <table class="order-table">
                     <thead>
@@ -421,6 +407,8 @@
                             <th>用户名</th>
                             <th>角色</th>
                             <th>状态</th>
+                            <th>封禁原因</th>
+                            <th>封禁至</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -433,817 +421,990 @@
 
     <script>
         // ============================================================
-        // 1. Supabase 配置
-        // ============================================================
-        const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 1. Supabase 配置（⚠️ 请替换为完整 anon key）
+// ============================================================
+const SUPABASE_URL = "https://tdozxaazdiuauncmhvuo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Pstnb3KOIrdvXtwKiT3rPg_X7-9TL1U";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ---------- 全局状态 ----------
-        let currentTicketType = "";
-        let currentUsername = "";
-        let currentRole = "user";
-        let currentNickname = "";
-        let currentDisplayName = "";  // 论坛显示名
-        let currentPostId = null;     // 当前查看的帖子ID
-        let toastTimer = null;
+// ---------- 全局状态 ----------
+let currentTicketType = "";
+let currentUsername = "";
+let currentRole = "user";
+let currentNickname = "";
+let currentDisplayName = "";
+let currentPostId = null;
+let currentChannel = "公共频道";
+let toastTimer = null;
+let channelRulesCache = {};
 
-        // ---------- 计算显示名 ----------
-        function makeDisplayName(role, nickname, username) {
-            if (role === 'admin') return '👑 管理员';
-            return nickname || username;
+// ---------- 全屏模式 ----------
+function enterFull() { document.body.classList.add('fullscreen'); }
+function exitFull() { document.body.classList.remove('fullscreen'); }
+
+// ---------- 显示名 ----------
+function makeDisplayName(role, nickname, username) {
+    if (role === 'admin') return '👑 管理员';
+    return nickname || username;
+}
+
+// ---------- Toast ----------
+function showToast(msg, type = 'info', duration = 3000) {
+    const el = document.getElementById('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'toast show';
+    if (type === 'success') el.classList.add('success');
+    if (type === 'error') el.classList.add('error');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.classList.remove('show'); }, duration);
+}
+
+// ---------- SHA-256 ----------
+async function sha256(message) {
+    if (!window.crypto || !window.crypto.subtle) {
+        throw new Error('当前浏览器不支持加密，请使用 HTTPS 或 localhost 访问');
+    }
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ---------- HTML 转义 ----------
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ---------- 视频嵌入解析 ----------
+function getVideoEmbedHtml(url) {
+    if (!url || !url.trim()) return '';
+    const u = url.trim();
+    // 哔哩哔哩
+    const bvMatch = u.match(/BV[a-zA-Z0-9]{10}/);
+    if (bvMatch) {
+        const bvid = bvMatch[0];
+        return `<div class="video-embed"><iframe src="https://player.bilibili.com/player.html?bvid=${bvid}&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="no" allowfullscreen="true"></iframe></div>`;
+    }
+    // 抖音
+    if (u.includes('douyin.com')) {
+        return `<a class="video-link-btn" href="${escapeHtml(u)}" target="_blank" rel="noopener">📱 点击观看抖音视频</a>`;
+    }
+    // 其他
+    return `<a class="video-link-btn" href="${escapeHtml(u)}" target="_blank" rel="noopener">🔗 查看视频链接</a>`;
+}
+
+// ---------- 封号检查 ----------
+function checkBanStatus(user) {
+    if (!user.is_blacklisted) return { banned: false };
+    if (user.ban_until && new Date(user.ban_until) <= new Date()) {
+        return { banned: false };  // 已到期
+    }
+    return {
+        banned: true,
+        reason: user.ban_reason || '未填写原因',
+        until: user.ban_until ? new Date(user.ban_until).toLocaleString() : '永久封禁'
+    };
+}
+
+function showBanModal(reason, until) {
+    document.getElementById('banReason').innerText = reason;
+    document.getElementById('banUntil').innerText = until;
+    document.getElementById('banModal').classList.add('show');
+}
+
+function closeBanModal() {
+    document.getElementById('banModal').classList.remove('show');
+    // 清空登录状态并返回首页
+    localStorage.removeItem("dyfc_user");
+    currentUsername = "";
+    currentRole = "user";
+    hideAll(); exitFull();
+    document.getElementById('home').style.display = 'block';
+}
+
+// ============================================================
+// 页面加载
+// ============================================================
+window.onload = async function() {
+    try {
+        if (!window.isSecureContext) {
+            showToast('⚠️ 当前页面非安全环境（HTTPS），加密功能不可用', 'error', 5000);
+        }
+        await loadChannelRules();
+        await checkSession();
+        await renderHomeNotice();
+    } catch (e) {
+        console.error('初始化错误:', e);
+    }
+};
+
+// ============================================================
+// 加载频道版规
+// ============================================================
+async function loadChannelRules() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('forum_channel_rules').select('*');
+        if (error) { console.warn('版规加载失败:', error); return; }
+        channelRulesCache = {};
+        data.forEach(r => { channelRulesCache[r.channel] = r.rules; });
+    } catch (e) { console.warn('版规加载异常:', e); }
+}
+
+// ============================================================
+// 会话检查（含封号检查）
+// ============================================================
+async function checkSession() {
+    const raw = localStorage.getItem("dyfc_user");
+    if (!raw) return;
+    try {
+        const userObj = JSON.parse(raw);
+        const { data } = await supabaseClient
+            .from('app_users')
+            .select('username, role, is_blacklisted, nickname, ban_reason, ban_until')
+            .eq('username', userObj.username)
+            .maybeSingle();
+        if (!data) { localStorage.removeItem("dyfc_user"); return; }
+
+        // 检查封号
+        const banInfo = checkBanStatus(data);
+        if (banInfo.banned) {
+            localStorage.removeItem("dyfc_user");
+            showBanModal(banInfo.reason, banInfo.until);
+            return;
         }
 
-        // ---------- Toast ----------
-        function showToast(msg, type = 'info', duration = 3000) {
-            const el = document.getElementById('toast');
-            if (!el) return;
-            el.textContent = msg;
-            el.className = 'toast show';
-            if (type === 'success') el.classList.add('success');
-            if (type === 'error') el.classList.add('error');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => { el.classList.remove('show'); }, duration);
+        currentUsername = data.username;
+        currentRole = data.role || 'user';
+        currentNickname = data.nickname || '';
+        currentDisplayName = makeDisplayName(currentRole, currentNickname, currentUsername);
+        hideAll(); exitFull();
+        if (currentRole === "admin") {
+            document.getElementById("adminPage").style.display = "block";
+        } else {
+            document.getElementById("userPage").style.display = "block";
+            await renderUserNotice();
+        }
+    } catch (e) {
+        localStorage.removeItem("dyfc_user");
+    }
+}
+
+// ============================================================
+// 页面切换
+// ============================================================
+function hideAll() {
+    const ids = [
+        'home','login','register','userPage','stationPage','ticketPage','buyPage',
+        'orderSuccess','myOrderPage','adminPage','orderListPage','noticeManagePage',
+        'blacklistPage','forumPage','postDetailPage','profilePage'
+    ];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    const lErr = document.getElementById('loginError');
+    const rErr = document.getElementById('regError');
+    if (lErr) lErr.innerText = '';
+    if (rErr) rErr.innerText = '';
+}
+
+function showHome() { hideAll(); exitFull(); document.getElementById('home').style.display = 'block'; renderHomeNotice(); }
+function showLogin() { hideAll(); exitFull(); document.getElementById('login').style.display = 'block'; }
+function showRegister() { hideAll(); exitFull(); document.getElementById('register').style.display = 'block'; }
+
+function backToUser() {
+    exitFull();
+    if (currentRole === 'admin') { hideAll(); document.getElementById('adminPage').style.display = 'block'; }
+    else { hideAll(); document.getElementById('userPage').style.display = 'block'; renderUserNotice(); }
+}
+function backToAdmin() { exitFull(); hideAll(); document.getElementById('adminPage').style.display = 'block'; }
+
+// ============================================================
+// 公告
+// ============================================================
+async function renderHomeNotice() {
+    const box = document.getElementById('homeNoticeList');
+    if (!box) return;
+    box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
+    try {
+        const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
+        if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; return; }
+        if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告</div>'; return; }
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        box.innerHTML = '';
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'notice-item';
+            const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+            div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
+            box.appendChild(div);
+        });
+    } catch (err) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`; }
+}
+
+async function renderUserNotice() {
+    const box = document.getElementById('userNoticeList');
+    if (!box) return;
+    box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
+    try {
+        const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
+        if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; return; }
+        if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告</div>'; return; }
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        box.innerHTML = '';
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'notice-item';
+            const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+            div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
+            box.appendChild(div);
+        });
+    } catch (err) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`; }
+}
+
+async function renderNoticeManage() {
+    const box = document.getElementById('noticeManageList');
+    const countEl = document.getElementById('noticeCount');
+    if (!box) return;
+    box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
+    try {
+        const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
+        if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; if (countEl) countEl.textContent = '0'; return; }
+        if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告</div>'; if (countEl) countEl.textContent = '0'; return; }
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        if (countEl) countEl.textContent = data.length;
+        box.innerHTML = '';
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'notice-item-manage';
+            const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
+            const safeContent = escapeHtml(item.content).replace(/&#39;/g, "\\'");
+            div.innerHTML = `
+                <div class="notice-content"><strong>${escapeHtml(item.content)}</strong>${time ? `<span style="color:#888;font-size:12px;margin-left:10px;">${time}</span>` : ''}</div>
+                <div class="notice-actions">
+                    <button class="btn btn-sm" onclick="editNotice(${item.id}, '${safeContent}')">编辑</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteNotice(${item.id})">删除</button>
+                </div>
+            `;
+            box.appendChild(div);
+        });
+    } catch (err) {
+        box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`;
+        if (countEl) countEl.textContent = '0';
+    }
+}
+
+async function addNotice() {
+    const inp = document.getElementById('newNoticeContent');
+    if (!inp) return;
+    const content = inp.value.trim();
+    if (!content) { showToast('请输入公告内容', 'error'); return; }
+    try {
+        const { error } = await supabaseClient.from('dyfc_notices').insert([{ content, created_at: new Date().toISOString() }]);
+        if (error) { showToast('发布公告失败：' + error.message, 'error'); return; }
+        inp.value = '';
+        showToast('✅ 公告发布成功！', 'success');
+        await renderNoticeManage(); await renderHomeNotice(); await renderUserNotice();
+    } catch (err) { showToast('发布公告异常：' + err.message, 'error'); }
+}
+
+async function editNotice(id, oldText) {
+    const newVal = prompt('编辑公告内容', oldText);
+    if (newVal === null) return;
+    const trimmed = newVal.trim();
+    if (!trimmed) { showToast('公告内容不能为空', 'error'); return; }
+    try {
+        const { error } = await supabaseClient.from('dyfc_notices').update({ content: trimmed }).eq('id', id);
+        if (error) { showToast('编辑失败：' + error.message, 'error'); return; }
+        showToast('✅ 公告已更新', 'success');
+        await renderNoticeManage(); await renderHomeNotice(); await renderUserNotice();
+    } catch (err) { showToast('编辑异常：' + err.message, 'error'); }
+}
+
+async function deleteNotice(id) {
+    if (!confirm('确定要删除这条公告吗？')) return;
+    try {
+        const { error } = await supabaseClient.from('dyfc_notices').delete().eq('id', id);
+        if (error) { showToast('删除失败：' + error.message, 'error'); return; }
+        showToast('🗑️ 公告已删除', 'success');
+        await renderNoticeManage(); await renderHomeNotice(); await renderUserNotice();
+    } catch (err) { showToast('删除异常：' + err.message, 'error'); }
+}
+
+// ============================================================
+// 用户认证
+// ============================================================
+async function register() {
+    const username = document.getElementById('regUsername').value.trim();
+    const pwd = document.getElementById('regPwd').value.trim();
+    const nickname = document.getElementById('regNickname').value.trim();
+    const errTip = document.getElementById('regError');
+    if (!errTip) return;
+    errTip.innerText = '';
+    if (!username || !pwd) { errTip.innerText = '用户名、密码不能为空'; return; }
+    if (pwd.length < 6) { errTip.innerText = '密码至少6位'; return; }
+    try {
+        const hashPwd = await sha256(pwd);
+        const { error } = await supabaseClient.from('app_users').insert([{
+            username, password_hash: hashPwd, role: 'user',
+            is_blacklisted: false,
+            nickname: nickname || null
+        }]);
+        if (error) {
+            if (error.code === '23505') errTip.innerText = '用户名已存在';
+            else errTip.innerText = error.message;
+            return;
+        }
+        showToast('🎉 注册成功，请登录', 'success');
+        showLogin();
+    } catch (err) { errTip.innerText = '注册异常：' + err.message; }
+}
+
+async function login() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const pwd = document.getElementById('loginPwd').value;
+    const errTip = document.getElementById('loginError');
+    if (!errTip) return;
+    errTip.innerText = '';
+    if (!username || !pwd) { errTip.innerText = '填写用户名和密码'; return; }
+    try {
+        const hashPwd = await sha256(pwd);
+        const { data, error } = await supabaseClient
+            .from('app_users')
+            .select('username, role, is_blacklisted, nickname, ban_reason, ban_until')
+            .eq('username', username)
+            .eq('password_hash', hashPwd)
+            .maybeSingle();
+
+        if (error || !data) { errTip.innerText = '用户名或者密码错误'; return; }
+
+        // 检查封号
+        const banInfo = checkBanStatus(data);
+        if (banInfo.banned) {
+            showBanModal(banInfo.reason, banInfo.until);
+            return;
         }
 
-        // ---------- SHA-256 ----------
-        async function sha256(message) {
-            if (!window.crypto || !window.crypto.subtle) {
-                throw new Error('当前浏览器不支持加密，请使用 HTTPS 或 localhost 访问');
-            }
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        // ---------- 转义 HTML ----------
-        function escapeHtml(str) {
-            if (str === null || str === undefined) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        // ============================================================
-        // 页面加载
-        // ============================================================
-        window.onload = async function() {
-            try {
-                if (!window.isSecureContext) {
-                    showToast('⚠️ 当前页面非安全环境（HTTPS），加密功能不可用', 'error', 5000);
-                }
-                await checkSession();
-                await renderHomeNotice();
-            } catch (e) {
-                console.error('初始化错误:', e);
-            }
-        };
-
-        // ============================================================
-        // 会话检查
-        // ============================================================
-        async function checkSession() {
-            const raw = localStorage.getItem("dyfc_user");
-            if (!raw) return;
-            try {
-                const userObj = JSON.parse(raw);
-                const { data } = await supabaseClient
-                    .from('app_users')
-                    .select('username, role, is_blacklisted, nickname')
-                    .eq('username', userObj.username)
-                    .maybeSingle();
-                if (!data || data.is_blacklisted) {
-                    localStorage.removeItem("dyfc_user");
-                    return;
-                }
-                currentUsername = data.username;
-                currentRole = data.role || 'user';
-                currentNickname = data.nickname || '';
-                currentDisplayName = makeDisplayName(currentRole, currentNickname, currentUsername);
-                hideAll();
-                if (currentRole === "admin") {
-                    document.getElementById("adminPage").style.display = "block";
-                } else {
-                    document.getElementById("userPage").style.display = "block";
-                    await renderUserNotice();
-                }
-            } catch (e) {
-                localStorage.removeItem("dyfc_user");
-            }
-        }
-
-        // ============================================================
-        // 页面切换
-        // ============================================================
-        function hideAll() {
-            const ids = [
-                'home','login','register','userPage','stationPage','ticketPage','buyPage',
-                'orderSuccess','myOrderPage','adminPage','orderListPage','noticeManagePage',
-                'blacklistPage','forumPage','postDetailPage','profilePage'
-            ];
-            ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-            const loginError = document.getElementById('loginError');
-            const regError = document.getElementById('regError');
-            if (loginError) loginError.innerText = '';
-            if (regError) regError.innerText = '';
-        }
-
-        function showHome() { hideAll(); document.getElementById('home').style.display = 'block'; renderHomeNotice(); }
-        function showLogin() { hideAll(); document.getElementById('login').style.display = 'block'; }
-        function showRegister() { hideAll(); document.getElementById('register').style.display = 'block'; }
-
-        function backToUser() {
-            if (currentRole === 'admin') { hideAll(); document.getElementById('adminPage').style.display = 'block'; }
-            else { hideAll(); document.getElementById('userPage').style.display = 'block'; renderUserNotice(); }
-        }
-        function backToAdmin() { hideAll(); document.getElementById('adminPage').style.display = 'block'; }
-
-        // ============================================================
-        // 公告
-        // ============================================================
-        async function renderHomeNotice() {
-            const box = document.getElementById('homeNoticeList');
-            if (!box) return;
-            box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
-            try {
-                const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
-                if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; return; }
-                if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告</div>'; return; }
-                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                box.innerHTML = '';
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'notice-item';
-                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-                    div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
-                    box.appendChild(div);
-                });
-            } catch (err) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`; }
-        }
-
-        async function renderUserNotice() {
-            const box = document.getElementById('userNoticeList');
-            if (!box) return;
-            box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
-            try {
-                const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
-                if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; return; }
-                if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告</div>'; return; }
-                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                box.innerHTML = '';
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'notice-item';
-                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-                    div.innerText = `• ${item.content}` + (time ? `  （${time}）` : '');
-                    box.appendChild(div);
-                });
-            } catch (err) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`; }
-        }
-
-        async function renderNoticeManage() {
-            const box = document.getElementById('noticeManageList');
-            const countEl = document.getElementById('noticeCount');
-            if (!box) return;
-            box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
-            try {
-                const { data, error } = await supabaseClient.from('dyfc_notices').select('*');
-                if (error) { box.innerHTML = `<div class="notice-error">⚠️ 公告加载失败：${error.message}</div>`; if (countEl) countEl.textContent = '0'; return; }
-                if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无公告，点击上方「发布新公告」添加</div>'; if (countEl) countEl.textContent = '0'; return; }
-                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                if (countEl) countEl.textContent = data.length;
-                box.innerHTML = '';
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'notice-item-manage';
-                    const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-                    const safeContent = escapeHtml(item.content).replace(/&#39;/g, "\\'");
-                    div.innerHTML = `
-                        <div class="notice-content"><strong>${escapeHtml(item.content)}</strong>${time ? `<span style="color:#888;font-size:12px;margin-left:10px;">${time}</span>` : ''}</div>
-                        <div class="notice-actions">
-                            <button class="btn btn-sm" onclick="editNotice(${item.id}, '${safeContent}')">编辑</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteNotice(${item.id})">删除</button>
-                        </div>
-                    `;
-                    box.appendChild(div);
-                });
-            } catch (err) {
-                box.innerHTML = `<div class="notice-error">⚠️ 公告加载异常：${err.message}</div>`;
-                if (countEl) countEl.textContent = '0';
-            }
-        }
-
-        async function addNotice() {
-            const inp = document.getElementById('newNoticeContent');
-            if (!inp) return;
-            const content = inp.value.trim();
-            if (!content) { showToast('请输入公告内容', 'error'); return; }
-            try {
-                const { error } = await supabaseClient.from('dyfc_notices').insert([{ content, created_at: new Date().toISOString() }]);
-                if (error) { showToast('发布公告失败：' + error.message, 'error'); return; }
-                inp.value = '';
-                showToast('✅ 公告发布成功！', 'success');
-                await renderNoticeManage(); await renderHomeNotice(); await renderUserNotice();
-            } catch (err) { showToast('发布公告异常：' + err.message, 'error'); }
-        }
-
-        async function editNotice(id, oldText) {
-            const newVal = prompt('编辑公告内容', oldText);
-            if (newVal === null) return;
-            const trimmed = newVal.trim();
-            if (!trimmed) { showToast('公告内容不能为空', 'error'); return; }
-            try {
-                const { error } = await supabaseClient.from('dyfc_notices').update({ content: trimmed }).eq('id', id);
-                if (error) { showToast('编辑失败：' + error.message, 'error'); return; }
-                showToast('✅ 公告已更新', 'success');
-                await renderNoticeManage(); await renderHomeNotice(); await renderUserNotice();
-            } catch (err) { showToast('编辑异常：' + err.message, 'error'); }
-        }
-
-        async function deleteNotice(id) {
-            if (!confirm('确定要删除这条公告吗？')) return;
-            try {
-                const { error } = await supabaseClient.from('dyfc_notices').delete().eq('id', id);
-                if (error) { showToast('删除失败：' + error.message, 'error'); return; }
-                showToast('🗑️ 公告已删除', 'success');
-                await renderNoticeManage(); await renderHomeNotice(); await renderUserNotice();
-            } catch (err) { showToast('删除异常：' + err.message, 'error'); }
-        }
-
-        // ============================================================
-        // 用户注册 / 登录 / 注销
-        // ============================================================
-        async function register() {
-            const username = document.getElementById('regUsername').value.trim();
-            const pwd = document.getElementById('regPwd').value.trim();
-            const nickname = document.getElementById('regNickname').value.trim();
-            const errTip = document.getElementById('regError');
-            if (!errTip) return;
-            errTip.innerText = '';
-            if (!username || !pwd) { errTip.innerText = '用户名、密码不能为空'; return; }
-            if (pwd.length < 6) { errTip.innerText = '密码至少6位'; return; }
-            try {
-                const hashPwd = await sha256(pwd);
-                const { error } = await supabaseClient.from('app_users').insert([{
-                    username, password_hash: hashPwd, role: 'user',
-                    is_blacklisted: false,
-                    nickname: nickname || null
-                }]);
-                if (error) {
-                    if (error.code === '23505') errTip.innerText = '用户名已存在';
-                    else errTip.innerText = error.message;
-                    return;
-                }
-                showToast('🎉 注册成功，请登录', 'success');
-                showLogin();
-            } catch (err) { errTip.innerText = '注册异常：' + err.message; }
-        }
-
-        async function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const pwd = document.getElementById('loginPwd').value;
-            const errTip = document.getElementById('loginError');
-            if (!errTip) return;
-            errTip.innerText = '';
-            if (!username || !pwd) { errTip.innerText = '填写用户名和密码'; return; }
-            try {
-                const hashPwd = await sha256(pwd);
-                const { data, error } = await supabaseClient
-                    .from('app_users')
-                    .select('username, role, is_blacklisted, nickname')
-                    .eq('username', username)
-                    .eq('password_hash', hashPwd)
-                    .maybeSingle();
-
-                if (error || !data) { errTip.innerText = '用户名或者密码错误'; return; }
-                if (data.is_blacklisted) { errTip.innerText = '🚫 该账号已被拉黑，禁止登录'; return; }
-
-                currentUsername = data.username;
-                currentRole = data.role || 'user';
-                currentNickname = data.nickname || '';
-                currentDisplayName = makeDisplayName(currentRole, currentNickname, currentUsername);
-                localStorage.setItem('dyfc_user', JSON.stringify(data));
-                hideAll();
-                if (currentRole === 'admin') {
-                    document.getElementById('adminPage').style.display = 'block';
-                    showToast('👑 管理员登录成功', 'success');
-                } else {
-                    document.getElementById('userPage').style.display = 'block';
-                    await renderUserNotice();
-                    showToast('🚗 欢迎回来，' + currentDisplayName, 'success');
-                }
-            } catch (err) { errTip.innerText = '登录异常：' + err.message; }
-        }
-
-        function logout() {
-            localStorage.removeItem('dyfc_user');
-            currentUsername = '';
-            currentRole = 'user';
-            currentNickname = '';
-            currentDisplayName = '';
-            showHome();
-            showToast('已退出登录', 'info');
-        }
-
-        // ============================================================
-        // 个人信息：设置昵称 / 注销账号
-        // ============================================================
-        function showProfile() {
-            hideAll();
-            if (currentRole === 'admin') {
-                document.getElementById('adminPage').style.display = 'block';
-            } else {
-                document.getElementById('userPage').style.display = 'block';
-            }
-            document.getElementById('profilePage').style.display = 'block';
-            document.getElementById('profileUsername').innerText = currentUsername;
-            document.getElementById('profileNickname').innerText = currentNickname || '（未设置，将显示用户名）';
-            document.getElementById('profileRole').innerText = currentRole === 'admin' ? '👑 管理员' : '普通用户';
-            document.getElementById('nicknameInput').value = currentNickname || '';
-        }
-
-        async function saveNickname() {
-            const nickname = document.getElementById('nicknameInput').value.trim();
-            try {
-                const { error } = await supabaseClient
-                    .from('app_users')
-                    .update({ nickname: nickname || null })
-                    .eq('username', currentUsername);
-                if (error) { showToast('保存失败：' + error.message, 'error'); return; }
-                currentNickname = nickname;
-                currentDisplayName = makeDisplayName(currentRole, currentNickname, currentUsername);
-                // 更新本地缓存
-                const cached = JSON.parse(localStorage.getItem('dyfc_user') || '{}');
-                cached.nickname = nickname;
-                localStorage.setItem('dyfc_user', JSON.stringify(cached));
-
-                // 同步更新用户的帖子/评论显示名
-                await supabaseClient.from('forum_posts').update({ display_name: currentDisplayName }).eq('username', currentUsername);
-                await supabaseClient.from('forum_comments').update({ display_name: currentDisplayName }).eq('username', currentUsername);
-
-                document.getElementById('profileNickname').innerText = nickname || '（未设置，将显示用户名）';
-                showToast('✅ 昵称已保存', 'success');
-            } catch (err) { showToast('保存异常：' + err.message, 'error'); }
-        }
-
-        async function deleteAccount() {
-            if (currentRole === 'admin') { showToast('管理员账号无法注销', 'error'); return; }
-            if (!confirm('⚠️ 确定要注销账号吗？\n\n您的账号、论坛帖子和评论将被永久删除，无法恢复！')) return;
-            if (!confirm('再次确认：真的要注销账号吗？')) return;
-            try {
-                // 删除用户的帖子和评论
-                await supabaseClient.from('forum_posts').delete().eq('username', currentUsername);
-                await supabaseClient.from('forum_comments').delete().eq('username', currentUsername);
-                // 删除用户
-                const { error } = await supabaseClient.from('app_users').delete().eq('username', currentUsername);
-                if (error) { showToast('注销失败：' + error.message, 'error'); return; }
-                showToast('👋 账号已注销，再见！', 'success');
-                localStorage.removeItem('dyfc_user');
-                currentUsername = '';
-                currentRole = 'user';
-                currentNickname = '';
-                currentDisplayName = '';
-                setTimeout(() => showHome(), 800);
-            } catch (err) { showToast('注销异常：' + err.message, 'error'); }
-        }
-
-        // ============================================================
-        // 购票流程
-        // ============================================================
-        function showStationPage() { hideAll(); document.getElementById('userPage').style.display = 'block'; document.getElementById('stationPage').style.display = 'block'; }
-        function showTicketPage() { hideAll(); document.getElementById('userPage').style.display = 'block'; document.getElementById('ticketPage').style.display = 'block'; }
-        function showBuyPage(ticket) { currentTicketType = ticket; document.getElementById('selectedTicket').innerText = ticket; hideAll(); document.getElementById('userPage').style.display = 'block'; document.getElementById('buyPage').style.display = 'block'; }
-
-        async function submitOrder() {
-            const buyerName = document.getElementById('buyerName').value.trim();
-            if (!buyerName) { showToast('请填写学号或姓名', 'error'); return; }
-            const orderNo = 'DYFC' + Date.now().toString().slice(-6) + Math.floor(Math.random()*1000).toString().padStart(3,'0');
-            const payload = {
-                ticket: currentTicketType,
-                name: buyerName,
-                station: '公园路小学（东）',
-                order_no: orderNo,
-                username: currentUsername,
-                created_at: new Date().toISOString()
-            };
-            try {
-                const { error } = await supabaseClient.from('dyfc_orders').insert([payload]);
-                if (error) { showToast('下单失败：' + error.message, 'error'); return; }
-                document.getElementById('orderNo').innerText = orderNo;
-                document.getElementById('buyerName').value = '';
-                hideAll();
-                document.getElementById('userPage').style.display = 'block';
-                document.getElementById('orderSuccess').style.display = 'block';
-                showToast('✅ 购票成功！', 'success');
-            } catch (err) { showToast('下单异常：' + err.message, 'error'); }
-        }
-
-        async function showMyOrder() {
-            hideAll();
+        currentUsername = data.username;
+        currentRole = data.role || 'user';
+        currentNickname = data.nickname || '';
+        currentDisplayName = makeDisplayName(currentRole, currentNickname, currentUsername);
+        localStorage.setItem('dyfc_user', JSON.stringify(data));
+        hideAll(); exitFull();
+        if (currentRole === 'admin') {
+            document.getElementById('adminPage').style.display = 'block';
+            showToast('👑 管理员登录成功', 'success');
+        } else {
             document.getElementById('userPage').style.display = 'block';
-            document.getElementById('myOrderPage').style.display = 'block';
-            const tbody = document.getElementById('myOrderBody');
-            if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">加载中...</td></tr>';
-            try {
-                const { data, error } = await supabaseClient.from('dyfc_orders').select('*').eq('username', currentUsername);
-                if (error) { tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
-                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无购票记录</td></tr>'; return; }
-                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                tbody.innerHTML = '';
-                data.forEach(o => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${escapeHtml(o.ticket||'-')}</td><td>${escapeHtml(o.name||'-')}</td><td>${escapeHtml(o.order_no||'-')}</td><td>${escapeHtml(o.station||'-')}</td><td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>`;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">异常：${err.message}</td></tr>`; }
+            await renderUserNotice();
+            showToast('🚗 欢迎回来，' + currentDisplayName, 'success');
         }
+    } catch (err) { errTip.innerText = '登录异常：' + err.message; }
+}
 
-        // ============================================================
-        // 论坛功能
-        // ============================================================
-        function showForum() {
-            if (!currentUsername) {
-                showToast('请先登录后再访问论坛', 'error');
-                showLogin();
-                return;
-            }
-            hideAll();
-            if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
-            else document.getElementById('userPage').style.display = 'block';
-            document.getElementById('forumPage').style.display = 'block';
-            renderForumPosts();
+function logout() {
+    localStorage.removeItem('dyfc_user');
+    currentUsername = '';
+    currentRole = 'user';
+    currentNickname = '';
+    currentDisplayName = '';
+    showHome();
+    showToast('已退出登录', 'info');
+}
+
+// ============================================================
+// 个人信息 / 昵称 / 注销
+// ============================================================
+function showProfile() {
+    hideAll();
+    exitFull();
+    if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+    else document.getElementById('userPage').style.display = 'block';
+    document.getElementById('profilePage').style.display = 'block';
+    document.getElementById('profileUsername').innerText = currentUsername;
+    document.getElementById('profileNickname').innerText = currentNickname || '（未设置，显示用户名）';
+    document.getElementById('profileRole').innerText = currentRole === 'admin' ? '👑 管理员' : '普通用户';
+    document.getElementById('nicknameInput').value = currentNickname || '';
+}
+
+async function saveNickname() {
+    const nickname = document.getElementById('nicknameInput').value.trim();
+    try {
+        const { error } = await supabaseClient.from('app_users').update({ nickname: nickname || null }).eq('username', currentUsername);
+        if (error) { showToast('保存失败：' + error.message, 'error'); return; }
+        currentNickname = nickname;
+        currentDisplayName = makeDisplayName(currentRole, currentNickname, currentUsername);
+        const cached = JSON.parse(localStorage.getItem('dyfc_user') || '{}');
+        cached.nickname = nickname;
+        localStorage.setItem('dyfc_user', JSON.stringify(cached));
+
+        // 同步更新帖子和评论的显示名
+        await supabaseClient.from('forum_posts').update({ display_name: currentDisplayName }).eq('username', currentUsername);
+        await supabaseClient.from('forum_comments').update({ display_name: currentDisplayName }).eq('username', currentUsername);
+
+        document.getElementById('profileNickname').innerText = nickname || '（未设置，显示用户名）';
+        showToast('✅ 昵称已保存', 'success');
+    } catch (err) { showToast('保存异常：' + err.message, 'error'); }
+}
+
+async function deleteAccount() {
+    if (currentRole === 'admin') { showToast('管理员账号无法注销', 'error'); return; }
+    if (!confirm('⚠️ 确定要注销账号吗？\n您的账号、论坛帖子和评论将被永久删除，无法恢复！')) return;
+    if (!confirm('再次确认：真的要注销吗？')) return;
+    try {
+        await supabaseClient.from('forum_posts').delete().eq('username', currentUsername);
+        await supabaseClient.from('forum_comments').delete().eq('username', currentUsername);
+        const { error } = await supabaseClient.from('app_users').delete().eq('username', currentUsername);
+        if (error) { showToast('注销失败：' + error.message, 'error'); return; }
+        showToast('👋 账号已注销，再见！', 'success');
+        localStorage.removeItem('dyfc_user');
+        currentUsername = ''; currentRole = 'user'; currentNickname = ''; currentDisplayName = '';
+        setTimeout(() => showHome(), 800);
+    } catch (err) { showToast('注销异常：' + err.message, 'error'); }
+}
+
+// ============================================================
+// 购票流程
+// ============================================================
+function showStationPage() { hideAll(); enterFull(); document.getElementById('userPage').style.display = 'block'; document.getElementById('stationPage').style.display = 'block'; }
+function showTicketPage() { hideAll(); enterFull(); document.getElementById('userPage').style.display = 'block'; document.getElementById('ticketPage').style.display = 'block'; }
+function showBuyPage(ticket) {
+    currentTicketType = ticket;
+    document.getElementById('selectedTicket').innerText = ticket;
+    hideAll(); enterFull();
+    document.getElementById('userPage').style.display = 'block';
+    document.getElementById('buyPage').style.display = 'block';
+}
+
+async function submitOrder() {
+    const buyerName = document.getElementById('buyerName').value.trim();
+    if (!buyerName) { showToast('请填写学号或姓名', 'error'); return; }
+    const orderNo = 'DYFC' + Date.now().toString().slice(-6) + Math.floor(Math.random()*1000).toString().padStart(3,'0');
+    const payload = {
+        ticket: currentTicketType,
+        name: buyerName,
+        station: '公园路小学（东）',
+        order_no: orderNo,
+        username: currentUsername,
+        created_at: new Date().toISOString()
+    };
+    try {
+        const { error } = await supabaseClient.from('dyfc_orders').insert([payload]);
+        if (error) { showToast('下单失败：' + error.message, 'error'); return; }
+        document.getElementById('orderNo').innerText = orderNo;
+        document.getElementById('buyerName').value = '';
+        hideAll(); enterFull();
+        document.getElementById('userPage').style.display = 'block';
+        document.getElementById('orderSuccess').style.display = 'block';
+        showToast('✅ 购票成功！', 'success');
+    } catch (err) { showToast('下单异常：' + err.message, 'error'); }
+}
+
+async function showMyOrder() {
+    hideAll(); enterFull();
+    document.getElementById('userPage').style.display = 'block';
+    document.getElementById('myOrderPage').style.display = 'block';
+    const tbody = document.getElementById('myOrderBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">加载中...</td></tr>';
+    try {
+        const { data, error } = await supabaseClient.from('dyfc_orders').select('*').eq('username', currentUsername);
+        if (error) { tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无购票记录</td></tr>'; return; }
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        tbody.innerHTML = '';
+        data.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${escapeHtml(o.ticket||'-')}</td><td>${escapeHtml(o.name||'-')}</td><td>${escapeHtml(o.order_no||'-')}</td><td>${escapeHtml(o.station||'-')}</td><td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>`;
+            tbody.appendChild(tr);
+        });
+    } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="empty-tip">异常：${err.message}</td></tr>`; }
+}
+
+// ============================================================
+// 论坛
+// ============================================================
+function showForum() {
+    if (!currentUsername) { showToast('请先登录后再访问论坛', 'error'); showLogin(); return; }
+    hideAll(); enterFull();
+    if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+    else document.getElementById('userPage').style.display = 'block';
+    document.getElementById('forumPage').style.display = 'block';
+    // 更新频道标签激活状态
+    document.querySelectorAll('.channel-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.channel === currentChannel);
+    });
+    document.getElementById('currentChannelName').innerText = currentChannel;
+    renderChannelRules();
+    renderForumPosts();
+}
+
+function switchChannel(channel) {
+    currentChannel = channel;
+    document.querySelectorAll('.channel-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.channel === channel);
+    });
+    document.getElementById('currentChannelName').innerText = channel;
+    renderChannelRules();
+    renderForumPosts();
+}
+
+function renderChannelRules() {
+    const rulesContent = document.getElementById('channelRulesContent');
+    if (!rulesContent) return;
+    const rules = channelRulesCache[currentChannel] || `「${currentChannel}」暂无版规。`;
+    rulesContent.innerText = rules;
+}
+
+async function renderForumPosts() {
+    const box = document.getElementById('forumPostList');
+    const countEl = document.getElementById('postCount');
+    if (!box) return;
+    box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('forum_posts').select('*').eq('channel', currentChannel);
+        if (error) { box.innerHTML = `<div class="notice-error">⚠️ 加载失败：${error.message}</div>`; if (countEl) countEl.textContent='0'; return; }
+        if (!data || data.length === 0) {
+            box.innerHTML = '<div class="notice-empty">本频道还没有帖子，快来发第一帖吧！</div>';
+            if (countEl) countEl.textContent = '0';
+            return;
         }
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        if (countEl) countEl.textContent = data.length;
+        box.innerHTML = '';
+        data.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'post-card' + (p.is_harmonized ? ' harmonized' : '');
+            const time = p.created_at ? new Date(p.created_at).toLocaleString() : '';
+            const preview = p.is_harmonized
+                ? '<div class="harmonized-text">🚫 [此条消息已被和谐]</div>'
+                : `<div class="post-content">${escapeHtml(p.content).substring(0, 120)}${p.content.length > 120 ? '...' : ''}</div>`;
 
-        async function renderForumPosts() {
-            const box = document.getElementById('forumPostList');
-            const countEl = document.getElementById('postCount');
-            if (!box) return;
-            box.innerHTML = '<div class="notice-item" style="color:#aaa;">加载中...</div>';
-            try {
-                const { data, error } = await supabaseClient.from('forum_posts').select('*');
-                if (error) { box.innerHTML = `<div class="notice-error">⚠️ 加载失败：${error.message}</div>`; if (countEl) countEl.textContent='0'; return; }
-                if (!data || data.length === 0) {
-                    box.innerHTML = '<div class="notice-empty">还没有帖子，快来发第一帖吧！</div>';
-                    if (countEl) countEl.textContent = '0';
-                    return;
-                }
-                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                if (countEl) countEl.textContent = data.length;
-                box.innerHTML = '';
-                data.forEach(p => {
-                    const card = document.createElement('div');
-                    card.className = 'post-card' + (p.is_harmonized ? ' harmonized' : '');
-                    const time = p.created_at ? new Date(p.created_at).toLocaleString() : '';
-                    const preview = p.is_harmonized
-                        ? '<div class="harmonized-text">🚫 [此条消息已被和谐]</div>'
-                        : `<div class="post-content">${escapeHtml(p.content).substring(0, 120)}${p.content.length > 120 ? '...' : ''}</div>`;
+            const adminBtns = currentRole === 'admin' ? `
+                <button class="btn btn-sm ${p.is_harmonized ? 'btn-success' : 'btn-danger'}" onclick="event.stopPropagation(); togglePostHarmonized(${p.id}, ${p.is_harmonized})">
+                    ${p.is_harmonized ? '取消和谐' : '🚫 和谐'}
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deletePost(${p.id})">删除</button>
+            ` : '';
+            const selfBtn = (!p.is_harmonized && p.username === currentUsername && currentRole !== 'admin')
+                ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deletePost(${p.id})">删除</button>` : '';
 
-                    const adminBtns = currentRole === 'admin' ? `
-                        <button class="btn btn-sm ${p.is_harmonized ? 'btn-success' : 'btn-danger'}" onclick="event.stopPropagation(); togglePostHarmonized(${p.id}, ${p.is_harmonized})">
-                            ${p.is_harmonized ? '取消和谐' : '🚫 和谐'}
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deletePost(${p.id})">删除</button>
-                    ` : '';
-                    const selfBtn = (!p.is_harmonized && p.username === currentUsername && currentRole !== 'admin')
-                        ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deletePost(${p.id})">删除</button>` : '';
+            card.innerHTML = `
+                <div class="post-header">
+                    <span class="post-author ${p.display_name && p.display_name.includes('管理员') ? 'admin-badge' : ''}">${escapeHtml(p.display_name)}</span>
+                    <span class="post-time">${time}</span>
+                </div>
+                <div class="post-title-link" onclick="showPostDetail(${p.id})">
+                    ${p.is_harmonized ? '🚫 ' : ''}${escapeHtml(p.title)}
+                </div>
+                ${preview}
+                <div class="post-actions">
+                    <button class="btn btn-sm btn-outline" onclick="showPostDetail(${p.id})">查看详情</button>
+                    ${adminBtns}
+                    ${selfBtn}
+                </div>
+            `;
+            box.appendChild(card);
+        });
+    } catch (err) {
+        box.innerHTML = `<div class="notice-error">⚠️ 异常：${err.message}</div>`;
+        if (countEl) countEl.textContent = '0';
+    }
+}
 
-                    card.innerHTML = `
-                        <div class="post-header">
-                            <span class="post-author ${p.display_name && p.display_name.includes('管理员') ? 'admin-badge' : ''}">${escapeHtml(p.display_name)}</span>
-                            <span class="post-time">${time}</span>
-                        </div>
-                        <div class="post-title-link" onclick="showPostDetail(${p.id})">
-                            ${p.is_harmonized ? '🚫 ' : ''}${escapeHtml(p.title)}
-                        </div>
-                        ${preview}
-                        <div class="post-actions">
-                            <button class="btn btn-sm btn-outline" onclick="showPostDetail(${p.id})">查看详情</button>
-                            ${adminBtns}
-                            ${selfBtn}
-                        </div>
-                    `;
-                    box.appendChild(card);
-                });
-            } catch (err) {
-                box.innerHTML = `<div class="notice-error">⚠️ 异常：${err.message}</div>`;
-                if (countEl) countEl.textContent = '0';
-            }
+async function createPost() {
+    const titleEl = document.getElementById('newPostTitle');
+    const contentEl = document.getElementById('newPostContent');
+    const videoEl = document.getElementById('newPostVideo');
+    const title = titleEl.value.trim();
+    const content = contentEl.value.trim();
+    const videoUrl = videoEl.value.trim();
+    if (!title || !content) { showToast('标题和内容不能为空', 'error'); return; }
+    try {
+        const { error } = await supabaseClient.from('forum_posts').insert([{
+            title, content,
+            username: currentUsername,
+            display_name: currentDisplayName,
+            channel: currentChannel,
+            video_url: videoUrl || null,
+            is_harmonized: false,
+            created_at: new Date().toISOString()
+        }]);
+        if (error) { showToast('发帖失败：' + error.message, 'error'); return; }
+        titleEl.value = '';
+        contentEl.value = '';
+        videoEl.value = '';
+        showToast('✅ 帖子发布成功！', 'success');
+        await renderForumPosts();
+    } catch (err) { showToast('发帖异常：' + err.message, 'error'); }
+}
+
+async function showPostDetail(postId) {
+    currentPostId = postId;
+    hideAll(); enterFull();
+    if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+    else document.getElementById('userPage').style.display = 'block';
+    document.getElementById('postDetailPage').style.display = 'block';
+    const container = document.getElementById('postDetailContent');
+    container.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+
+    try {
+        const { data: post, error } = await supabaseClient
+            .from('forum_posts').select('*').eq('id', postId).maybeSingle();
+        if (error || !post) { container.innerHTML = '<div class="notice-error">帖子不存在或加载失败</div>'; return; }
+
+        const time = post.created_at ? new Date(post.created_at).toLocaleString() : '';
+        const body = post.is_harmonized
+            ? '<div class="harmonized-text" style="font-size:16px;">🚫 [此条消息已被和谐]</div>'
+            : `<div class="detail-content">${escapeHtml(post.content)}</div>`;
+
+        const videoHtml = (!post.is_harmonized && post.video_url) ? getVideoEmbedHtml(post.video_url) : '';
+
+        const adminBtns = currentRole === 'admin' ? `
+            <button class="btn btn-sm ${post.is_harmonized ? 'btn-success' : 'btn-danger'}" onclick="togglePostHarmonized(${post.id}, ${post.is_harmonized}, true)">
+                ${post.is_harmonized ? '取消和谐' : '🚫 和谐此帖'}
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deletePost(${post.id}, true)">删除帖子</button>
+        ` : '';
+        const selfBtn = (!post.is_harmonized && post.username === currentUsername && currentRole !== 'admin')
+            ? `<button class="btn btn-sm btn-danger" onclick="deletePost(${post.id}, true)">删除帖子</button>` : '';
+
+        container.innerHTML = `
+            <div class="post-header">
+                <span class="post-author ${post.display_name && post.display_name.includes('管理员') ? 'admin-badge' : ''}">${escapeHtml(post.display_name)}</span>
+                <span class="post-time">${time}</span>
+            </div>
+            <h3 style="margin:10px 0; font-size:22px;">${post.is_harmonized ? '🚫 ' : ''}${escapeHtml(post.title)}</h3>
+            <div style="color:#888; font-size:13px; margin-bottom:10px;">频道：${escapeHtml(post.channel || '公共频道')}</div>
+            ${body}
+            ${videoHtml}
+            <div class="post-actions" style="margin-top:15px;">${adminBtns}${selfBtn}</div>
+        `;
+
+        await renderComments(postId);
+    } catch (err) {
+        container.innerHTML = `<div class="notice-error">异常：${err.message}</div>`;
+    }
+}
+
+async function renderComments(postId) {
+    const list = document.getElementById('commentList');
+    const countEl = document.getElementById('commentCount');
+    if (!list) return;
+    list.innerHTML = '<div style="color:#aaa;">加载评论中...</div>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('forum_comments').select('*').eq('post_id', postId);
+        if (error) { list.innerHTML = `<div class="notice-error">加载失败：${error.message}</div>`; return; }
+        if (!data || data.length === 0) {
+            list.innerHTML = '<div class="notice-empty">还没有评论，快来抢沙发！</div>';
+            if (countEl) countEl.textContent = '0';
+            return;
         }
+        data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        if (countEl) countEl.textContent = data.length;
+        list.innerHTML = '';
+        data.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'comment-card' + (c.is_harmonized ? ' harmonized' : '');
+            const time = c.created_at ? new Date(c.created_at).toLocaleString() : '';
+            const body = c.is_harmonized
+                ? '<div class="harmonized-text">🚫 [此条消息已被和谐]</div>'
+                : `<div class="comment-content">${escapeHtml(c.content)}</div>`;
+            const adminBtns = currentRole === 'admin' ? `
+                <button class="btn btn-sm ${c.is_harmonized ? 'btn-success' : 'btn-danger'}" onclick="toggleCommentHarmonized(${c.id}, ${c.is_harmonized})">
+                    ${c.is_harmonized ? '取消' : '🚫 和谐'}
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteComment(${c.id})">删除</button>
+            ` : '';
+            const selfBtn = (!c.is_harmonized && c.username === currentUsername && currentRole !== 'admin')
+                ? `<button class="btn btn-sm btn-danger" onclick="deleteComment(${c.id})">删除</button>` : '';
 
-        async function createPost() {
-            const titleEl = document.getElementById('newPostTitle');
-            const contentEl = document.getElementById('newPostContent');
-            const title = titleEl.value.trim();
-            const content = contentEl.value.trim();
-            if (!title || !content) { showToast('标题和内容不能为空', 'error'); return; }
-            try {
-                const { error } = await supabaseClient.from('forum_posts').insert([{
-                    title, content,
-                    username: currentUsername,
-                    display_name: currentDisplayName,
-                    is_harmonized: false,
-                    created_at: new Date().toISOString()
-                }]);
-                if (error) { showToast('发帖失败：' + error.message, 'error'); return; }
-                titleEl.value = '';
-                contentEl.value = '';
-                showToast('✅ 帖子发布成功！', 'success');
-                await renderForumPosts();
-            } catch (err) { showToast('发帖异常：' + err.message, 'error'); }
-        }
+            card.innerHTML = `
+                <div class="comment-header">
+                    <span class="post-author ${c.display_name && c.display_name.includes('管理员') ? 'admin-badge' : ''}">${escapeHtml(c.display_name)}</span>
+                    <span class="post-time">${time}</span>
+                </div>
+                ${body}
+                <div class="post-actions">${adminBtns}${selfBtn}</div>
+            `;
+            list.appendChild(card);
+        });
+    } catch (err) {
+        list.innerHTML = `<div class="notice-error">异常：${err.message}</div>`;
+    }
+}
 
-        async function showPostDetail(postId) {
-            currentPostId = postId;
-            hideAll();
-            if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
-            else document.getElementById('userPage').style.display = 'block';
-            document.getElementById('postDetailPage').style.display = 'block';
-            const container = document.getElementById('postDetailContent');
-            container.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+async function addComment() {
+    const contentEl = document.getElementById('newCommentContent');
+    const content = contentEl.value.trim();
+    if (!content) { showToast('评论内容不能为空', 'error'); return; }
+    if (!currentPostId) return;
+    try {
+        const { error } = await supabaseClient.from('forum_comments').insert([{
+            post_id: currentPostId,
+            content,
+            username: currentUsername,
+            display_name: currentDisplayName,
+            is_harmonized: false,
+            created_at: new Date().toISOString()
+        }]);
+        if (error) { showToast('评论失败：' + error.message, 'error'); return; }
+        contentEl.value = '';
+        showToast('✅ 评论已发布', 'success');
+        await renderComments(currentPostId);
+    } catch (err) { showToast('评论异常：' + err.message, 'error'); }
+}
 
-            try {
-                const { data: post, error } = await supabaseClient
-                    .from('forum_posts').select('*').eq('id', postId).maybeSingle();
-                if (error || !post) { container.innerHTML = '<div class="notice-error">帖子不存在或加载失败</div>'; return; }
+async function togglePostHarmonized(postId, currentStatus, refreshDetail) {
+    if (currentRole !== 'admin') return;
+    const newStatus = !currentStatus;
+    const action = newStatus ? '和谐' : '取消和谐';
+    if (!confirm(`确定要${action}这条帖子吗？`)) return;
+    try {
+        const { error } = await supabaseClient.from('forum_posts').update({ is_harmonized: newStatus }).eq('id', postId);
+        if (error) { showToast(`${action}失败：${error.message}`, 'error'); return; }
+        showToast(`✅ 已${action}`, 'success');
+        if (refreshDetail) await showPostDetail(postId);
+        else await renderForumPosts();
+    } catch (err) { showToast(`${action}异常：${err.message}`, 'error'); }
+}
 
-                const time = post.created_at ? new Date(post.created_at).toLocaleString() : '';
-                const body = post.is_harmonized
-                    ? '<div class="harmonized-text" style="font-size:16px;">🚫 [此条消息已被和谐]</div>'
-                    : `<div class="detail-content">${escapeHtml(post.content)}</div>`;
+async function toggleCommentHarmonized(commentId, currentStatus) {
+    if (currentRole !== 'admin') return;
+    const newStatus = !currentStatus;
+    const action = newStatus ? '和谐' : '取消和谐';
+    if (!confirm(`确定要${action}这条评论吗？`)) return;
+    try {
+        const { error } = await supabaseClient.from('forum_comments').update({ is_harmonized: newStatus }).eq('id', commentId);
+        if (error) { showToast(`${action}失败：${error.message}`, 'error'); return; }
+        showToast(`✅ 已${action}`, 'success');
+        await renderComments(currentPostId);
+    } catch (err) { showToast(`${action}异常：${err.message}`, 'error'); }
+}
 
-                const adminBtns = currentRole === 'admin' ? `
-                    <button class="btn btn-sm ${post.is_harmonized ? 'btn-success' : 'btn-danger'}" onclick="togglePostHarmonized(${post.id}, ${post.is_harmonized}, true)">
-                        ${post.is_harmonized ? '取消和谐' : '🚫 和谐此帖'}
+async function deletePost(postId, refreshDetail) {
+    if (!confirm('⚠️ 确定要删除这条帖子吗？其下所有评论也会被删除！')) return;
+    try {
+        await supabaseClient.from('forum_comments').delete().eq('post_id', postId);
+        const { error } = await supabaseClient.from('forum_posts').delete().eq('id', postId);
+        if (error) { showToast('删除失败：' + error.message, 'error'); return; }
+        showToast('🗑️ 帖子已删除', 'success');
+        if (refreshDetail) showForum();
+        else await renderForumPosts();
+    } catch (err) { showToast('删除异常：' + err.message, 'error'); }
+}
+
+async function deleteComment(commentId) {
+    if (!confirm('确定要删除这条评论吗？')) return;
+    try {
+        const { error } = await supabaseClient.from('forum_comments').delete().eq('id', commentId);
+        if (error) { showToast('删除失败：' + error.message, 'error'); return; }
+        showToast('🗑️ 评论已删除', 'success');
+        await renderComments(currentPostId);
+    } catch (err) { showToast('删除异常：' + err.message, 'error'); }
+}
+
+// ============================================================
+// 管理员：订单列表
+// ============================================================
+async function showOrderList() {
+    hideAll(); enterFull();
+    document.getElementById('adminPage').style.display = 'block';
+    document.getElementById('orderListPage').style.display = 'block';
+    const tbody = document.getElementById('orderTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">加载中...</td></tr>';
+    try {
+        const { data, error } = await supabaseClient.from('dyfc_orders').select('*');
+        if (error) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无订单</td></tr>'; return; }
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        tbody.innerHTML = '';
+        data.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${escapeHtml(o.ticket||'-')}</td><td>${escapeHtml(o.name||'-')}</td><td>${escapeHtml(o.order_no||'-')}</td><td>${escapeHtml(o.station||'-')}</td><td>${escapeHtml(o.username||'-')}</td><td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>`;
+            tbody.appendChild(tr);
+        });
+    } catch (err) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">异常：${err.message}</td></tr>`; }
+}
+
+// ============================================================
+// 管理员：公告管理
+// ============================================================
+async function showNoticeManage() {
+    hideAll(); enterFull();
+    document.getElementById('adminPage').style.display = 'block';
+    document.getElementById('noticeManagePage').style.display = 'block';
+    await renderNoticeManage();
+}
+
+// ============================================================
+// 管理员：黑名单 / 封号管理
+// ============================================================
+async function showBlacklistManage() {
+    hideAll(); enterFull();
+    document.getElementById('adminPage').style.display = 'block';
+    document.getElementById('blacklistPage').style.display = 'block';
+    await renderBlacklist();
+}
+
+async function renderBlacklist() {
+    const tbody = document.getElementById('blacklistBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">加载中...</td></tr>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('app_users')
+            .select('id, username, role, is_blacklisted, nickname, ban_reason, ban_until');
+        if (error) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
+        if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无用户</td></tr>'; return; }
+        data.sort((a, b) => a.id - b.id);
+        tbody.innerHTML = '';
+        data.forEach(u => {
+            const isBlack = u.is_blacklisted && (!u.ban_until || new Date(u.ban_until) > new Date());
+            const banReason = u.ban_reason || '-';
+            let banUntilStr = '-';
+            if (u.ban_until) banUntilStr = new Date(u.ban_until).toLocaleString();
+            else if (isBlack) banUntilStr = '永久';
+            const display = u.role === 'admin' ? '👑 管理员' : (u.nickname ? `${u.nickname}（${u.username}）` : u.username);
+            const btnText = isBlack ? '解禁' : '拉黑';
+            const btnClass = isBlack ? 'btn-success' : 'btn-danger';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${escapeHtml(display)}</td>
+                <td>${u.role === 'admin' ? '👑 管理员' : '普通用户'}</td>
+                <td><span class="blacklist-badge ${isBlack ? 'badge-black' : 'badge-normal'}">${isBlack ? '🚫 已封禁' : '✅ 正常'}</span></td>
+                <td style="color:#ff6b6b; font-size:13px;">${escapeHtml(banReason)}</td>
+                <td style="color:#ff6b6b; font-size:13px;">${banUntilStr}</td>
+                <td>
+                    <button class="btn btn-sm ${btnClass}" onclick="toggleBlacklist(${u.id}, ${isBlack}, '${escapeHtml(u.username)}')">
+                        ${btnText}
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="deletePost(${post.id}, true)">删除帖子</button>
-                ` : '';
-                const selfBtn = (!post.is_harmonized && post.username === currentUsername && currentRole !== 'admin')
-                    ? `<button class="btn btn-sm btn-danger" onclick="deletePost(${post.id}, true)">删除帖子</button>` : '';
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">异常：${err.message}</td></tr>`; }
+}
 
-                container.innerHTML = `
-                    <div class="post-header">
-                        <span class="post-author ${post.display_name && post.display_name.includes('管理员') ? 'admin-badge' : ''}">${escapeHtml(post.display_name)}</span>
-                        <span class="post-time">${time}</span>
-                    </div>
-                    <h3 style="margin:10px 0; font-size:22px;">${post.is_harmonized ? '🚫 ' : ''}${escapeHtml(post.title)}</h3>
-                    ${body}
-                    <div class="post-actions" style="margin-top:15px;">${adminBtns}${selfBtn}</div>
-                `;
+async function banUser() {
+    const username = document.getElementById('banUsername').value.trim();
+    const reason = document.getElementById('banReasonInput').value.trim();
+    const untilStr = document.getElementById('banUntilInput').value.trim();
 
-                await renderComments(postId);
-            } catch (err) {
-                container.innerHTML = `<div class="notice-error">异常：${err.message}</div>`;
-            }
-        }
+    if (!username) { showToast('请输入要封禁的用户名', 'error'); return; }
+    if (!reason) { showToast('请填写封号原因', 'error'); return; }
+    if (username === currentUsername) { showToast('不能封禁自己', 'error'); return; }
 
-        async function renderComments(postId) {
-            const list = document.getElementById('commentList');
-            const countEl = document.getElementById('commentCount');
-            if (!list) return;
-            list.innerHTML = '<div style="color:#aaa;">加载评论中...</div>';
-            try {
-                const { data, error } = await supabaseClient
-                    .from('forum_comments').select('*').eq('post_id', postId);
-                if (error) { list.innerHTML = `<div class="notice-error">加载失败：${error.message}</div>`; return; }
-                if (!data || data.length === 0) {
-                    list.innerHTML = '<div class="notice-empty">还没有评论，快来抢沙发！</div>';
-                    if (countEl) countEl.textContent = '0';
-                    return;
-                }
-                data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-                if (countEl) countEl.textContent = data.length;
-                list.innerHTML = '';
-                data.forEach(c => {
-                    const card = document.createElement('div');
-                    card.className = 'comment-card' + (c.is_harmonized ? ' harmonized' : '');
-                    const time = c.created_at ? new Date(c.created_at).toLocaleString() : '';
-                    const body = c.is_harmonized
-                        ? '<div class="harmonized-text">🚫 [此条消息已被和谐]</div>'
-                        : `<div class="comment-content">${escapeHtml(c.content)}</div>`;
-                    const adminBtns = currentRole === 'admin' ? `
-                        <button class="btn btn-sm ${c.is_harmonized ? 'btn-success' : 'btn-danger'}" onclick="toggleCommentHarmonized(${c.id}, ${c.is_harmonized})">
-                            ${c.is_harmonized ? '取消' : '🚫 和谐'}
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteComment(${c.id})">删除</button>
-                    ` : '';
-                    const selfBtn = (!c.is_harmonized && c.username === currentUsername && currentRole !== 'admin')
-                        ? `<button class="btn btn-sm btn-danger" onclick="deleteComment(${c.id})">删除</button>` : '';
+    let banUntil = null;
+    if (untilStr) {
+        const d = new Date(untilStr.replace(' ', 'T'));
+        if (isNaN(d.getTime())) { showToast('时间格式错误，请参考：2026-12-31 23:59', 'error'); return; }
+        banUntil = d.toISOString();
+    }
 
-                    card.innerHTML = `
-                        <div class="comment-header">
-                            <span class="post-author ${c.display_name && c.display_name.includes('管理员') ? 'admin-badge' : ''}">${escapeHtml(c.display_name)}</span>
-                            <span class="post-time">${time}</span>
-                        </div>
-                        ${body}
-                        <div class="post-actions">${adminBtns}${selfBtn}</div>
-                    `;
-                    list.appendChild(card);
-                });
-            } catch (err) {
-                list.innerHTML = `<div class="notice-error">异常：${err.message}</div>`;
-            }
-        }
+    try {
+        // 检查用户是否存在
+        const { data: user } = await supabaseClient
+            .from('app_users').select('username, role').eq('username', username).maybeSingle();
+        if (!user) { showToast('用户不存在', 'error'); return; }
+        if (user.role === 'admin') { showToast('不能封禁管理员', 'error'); return; }
 
-        async function addComment() {
-            const contentEl = document.getElementById('newCommentContent');
-            const content = contentEl.value.trim();
-            if (!content) { showToast('评论内容不能为空', 'error'); return; }
-            if (!currentPostId) return;
-            try {
-                const { error } = await supabaseClient.from('forum_comments').insert([{
-                    post_id: currentPostId,
-                    content,
-                    username: currentUsername,
-                    display_name: currentDisplayName,
-                    is_harmonized: false,
-                    created_at: new Date().toISOString()
-                }]);
-                if (error) { showToast('评论失败：' + error.message, 'error'); return; }
-                contentEl.value = '';
-                showToast('✅ 评论已发布', 'success');
-                await renderComments(currentPostId);
-            } catch (err) { showToast('评论异常：' + err.message, 'error'); }
-        }
+        const { error } = await supabaseClient.from('app_users').update({
+            is_blacklisted: true,
+            ban_reason: reason,
+            ban_until: banUntil
+        }).eq('username', username);
 
-        async function togglePostHarmonized(postId, currentStatus, refreshDetail) {
-            if (currentRole !== 'admin') return;
-            const newStatus = !currentStatus;
-            const action = newStatus ? '和谐' : '取消和谐';
-            if (!confirm(`确定要${action}这条帖子吗？`)) return;
-            try {
-                const { error } = await supabaseClient.from('forum_posts').update({ is_harmonized: newStatus }).eq('id', postId);
-                if (error) { showToast(`${action}失败：${error.message}`, 'error'); return; }
-                showToast(`✅ 已${action}`, 'success');
-                if (refreshDetail) await showPostDetail(postId);
-                else await renderForumPosts();
-            } catch (err) { showToast(`${action}异常：${err.message}`, 'error'); }
-        }
+        if (error) { showToast('封禁失败：' + error.message, 'error'); return; }
+        showToast(`✅ 已封禁用户「${username}」`, 'success');
+        document.getElementById('banUsername').value = '';
+        document.getElementById('banReasonInput').value = '';
+        document.getElementById('banUntilInput').value = '';
+        await renderBlacklist();
+    } catch (err) { showToast('封禁异常：' + err.message, 'error'); }
+}
 
-        async function toggleCommentHarmonized(commentId, currentStatus) {
-            if (currentRole !== 'admin') return;
-            const newStatus = !currentStatus;
-            const action = newStatus ? '和谐' : '取消和谐';
-            if (!confirm(`确定要${action}这条评论吗？`)) return;
-            try {
-                const { error } = await supabaseClient.from('forum_comments').update({ is_harmonized: newStatus }).eq('id', commentId);
-                if (error) { showToast(`${action}失败：${error.message}`, 'error'); return; }
-                showToast(`✅ 已${action}`, 'success');
-                await renderComments(currentPostId);
-            } catch (err) { showToast(`${action}异常：${err.message}`, 'error'); }
-        }
+async function toggleBlacklist(userId, currentStatus, username) {
+    if (username === currentUsername) { showToast('不能操作自己', 'error'); return; }
 
-        async function deletePost(postId, refreshDetail) {
-            if (!confirm('⚠️ 确定要删除这条帖子吗？其下的所有评论也会被删除！')) return;
-            try {
-                await supabaseClient.from('forum_comments').delete().eq('post_id', postId);
-                const { error } = await supabaseClient.from('forum_posts').delete().eq('id', postId);
-                if (error) { showToast('删除失败：' + error.message, 'error'); return; }
-                showToast('🗑️ 帖子已删除', 'success');
-                if (refreshDetail) showForum();
-                else await renderForumPosts();
-            } catch (err) { showToast('删除异常：' + err.message, 'error'); }
-        }
-
-        async function deleteComment(commentId) {
-            if (!confirm('确定要删除这条评论吗？')) return;
-            try {
-                const { error } = await supabaseClient.from('forum_comments').delete().eq('id', commentId);
-                if (error) { showToast('删除失败：' + error.message, 'error'); return; }
-                showToast('🗑️ 评论已删除', 'success');
-                await renderComments(currentPostId);
-            } catch (err) { showToast('删除异常：' + err.message, 'error'); }
-        }
-
-        // ============================================================
-        // 管理员：订单列表
-        // ============================================================
-        async function showOrderList() {
-            hideAll();
-            document.getElementById('adminPage').style.display = 'block';
-            document.getElementById('orderListPage').style.display = 'block';
-            const tbody = document.getElementById('orderTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">加载中...</td></tr>';
-            try {
-                const { data, error } = await supabaseClient.from('dyfc_orders').select('*');
-                if (error) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
-                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无订单</td></tr>'; return; }
-                data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                tbody.innerHTML = '';
-                data.forEach(o => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${escapeHtml(o.ticket||'-')}</td><td>${escapeHtml(o.name||'-')}</td><td>${escapeHtml(o.order_no||'-')}</td><td>${escapeHtml(o.station||'-')}</td><td>${escapeHtml(o.username||'-')}</td><td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>`;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) { tbody.innerHTML = `<tr><td colspan="6" class="empty-tip">异常：${err.message}</td></tr>`; }
-        }
-
-        // ============================================================
-        // 管理员：公告管理
-        // ============================================================
-        async function showNoticeManage() { hideAll(); document.getElementById('adminPage').style.display = 'block'; document.getElementById('noticeManagePage').style.display = 'block'; await renderNoticeManage(); }
-
-        // ============================================================
-        // 管理员：黑名单管理
-        // ============================================================
-        async function showBlacklistManage() {
-            hideAll();
-            document.getElementById('adminPage').style.display = 'block';
-            document.getElementById('blacklistPage').style.display = 'block';
+    if (!currentStatus) {
+        // 从正常 → 拉黑，使用快速封禁（无原因）
+        if (!confirm(`确定要封禁用户「${username}」吗？\n如需填写封禁原因，请使用上方表单。`)) return;
+        try {
+            const { error } = await supabaseClient.from('app_users').update({
+                is_blacklisted: true,
+                ban_reason: '违反社区规定',
+                ban_until: null
+            }).eq('id', userId);
+            if (error) { showToast('封禁失败：' + error.message, 'error'); return; }
+            showToast(`✅ 已封禁「${username}」`, 'success');
             await renderBlacklist();
-        }
+        } catch (err) { showToast('封禁异常：' + err.message, 'error'); }
+    } else {
+        // 从拉黑 → 解禁
+        if (!confirm(`确定要解禁用户「${username}」吗？`)) return;
+        try {
+            const { error } = await supabaseClient.from('app_users').update({
+                is_blacklisted: false,
+                ban_reason: null,
+                ban_until: null
+            }).eq('id', userId);
+            if (error) { showToast('解禁失败：' + error.message, 'error'); return; }
+            showToast(`✅ 已解禁「${username}」`, 'success');
+            await renderBlacklist();
+        } catch (err) { showToast('解禁异常：' + err.message, 'error'); }
+    }
+}
 
-        async function renderBlacklist() {
-            const tbody = document.getElementById('blacklistBody');
-            if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-tip">加载中...</td></tr>';
-            try {
-                const { data, error } = await supabaseClient.from('app_users').select('id, username, role, is_blacklisted, nickname');
-                if (error) { tbody.innerHTML = `<tr><td colspan="4" class="empty-tip">加载失败：${error.message}</td></tr>`; return; }
-                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无用户</td></tr>'; return; }
-                data.sort((a, b) => a.id - b.id);
-                tbody.innerHTML = '';
-                data.forEach(u => {
-                    const isBlack = u.is_blacklisted;
-                    const display = u.role === 'admin' ? '👑 管理员' : (u.nickname ? `${u.nickname}（${u.username}）` : u.username);
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${escapeHtml(display)}</td>
-                        <td>${u.role === 'admin' ? '👑 管理员' : '普通用户'}</td>
-                        <td><span class="blacklist-badge ${isBlack ? 'badge-black' : 'badge-normal'}">${isBlack ? '🚫 已拉黑' : '✅ 正常'}</span></td>
-                        <td>
-                            <button class="btn btn-sm ${isBlack ? 'btn-success' : 'btn-danger'}" 
-                                onclick="toggleBlacklist(${u.id}, ${isBlack}, '${escapeHtml(u.username)}')">
-                                ${isBlack ? '解禁' : '拉黑'}
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="empty-tip">异常：${err.message}</td></tr>`; }
-        }
-
-        async function toggleBlacklist(userId, currentStatus, username) {
-            const newStatus = !currentStatus;
-            const action = newStatus ? '拉黑' : '解禁';
-            if (username === currentUsername) { showToast('不能拉黑自己', 'error'); return; }
-            if (!confirm(`确定要${action}用户「${username}」吗？`)) return;
-            try {
-                const { error } = await supabaseClient.from('app_users').update({ is_blacklisted: newStatus }).eq('id', userId);
-                if (error) { showToast(`${action}失败：${error.message}`, 'error'); return; }
-                showToast(`✅ 已${action}「${username}」`, 'success');
-                await renderBlacklist();
-            } catch (err) { showToast(`${action}异常：${err.message}`, 'error'); }
-        }
-
-        // ============================================================
-        // 暴露全局函数
-        // ============================================================
-        window.showHome = showHome;
-        window.showLogin = showLogin;
-        window.showRegister = showRegister;
-        window.login = login;
-        window.register = register;
-        window.logout = logout;
-        window.showStationPage = showStationPage;
-        window.showTicketPage = showTicketPage;
-        window.showBuyPage = showBuyPage;
-        window.submitOrder = submitOrder;
-        window.showMyOrder = showMyOrder;
-        window.backToUser = backToUser;
-        window.showOrderList = showOrderList;
-        window.showNoticeManage = showNoticeManage;
-        window.backToAdmin = backToAdmin;
-        window.addNotice = addNotice;
-        window.editNotice = editNotice;
-        window.deleteNotice = deleteNotice;
-        window.renderHomeNotice = renderHomeNotice;
-        window.renderUserNotice = renderUserNotice;
-        window.renderNoticeManage = renderNoticeManage;
-        window.showBlacklistManage = showBlacklistManage;
-        window.renderBlacklist = renderBlacklist;
-        window.toggleBlacklist = toggleBlacklist;
-        window.showToast = showToast;
-        // 论坛 & 个人信息
-        window.showForum = showForum;
-        window.renderForumPosts = renderForumPosts;
-        window.createPost = createPost;
-        window.showPostDetail = showPostDetail;
-        window.renderComments = renderComments;
-        window.addComment = addComment;
-        window.togglePostHarmonized = togglePostHarmonized;
-        window.toggleCommentHarmonized = toggleCommentHarmonized;
-        window.deletePost = deletePost;
-        window.deleteComment = deleteComment;
-        window.showProfile = showProfile;
-        window.saveNickname = saveNickname;
-        window.deleteAccount = deleteAccount;
+// ============================================================
+// 暴露全局函数
+// ============================================================
+window.showHome = showHome;
+window.showLogin = showLogin;
+window.showRegister = showRegister;
+window.login = login;
+window.register = register;
+window.logout = logout;
+window.showStationPage = showStationPage;
+window.showTicketPage = showTicketPage;
+window.showBuyPage = showBuyPage;
+window.submitOrder = submitOrder;
+window.showMyOrder = showMyOrder;
+window.backToUser = backToUser;
+window.showOrderList = showOrderList;
+window.showNoticeManage = showNoticeManage;
+window.backToAdmin = backToAdmin;
+window.addNotice = addNotice;
+window.editNotice = editNotice;
+window.deleteNotice = deleteNotice;
+window.renderHomeNotice = renderHomeNotice;
+window.renderUserNotice = renderUserNotice;
+window.renderNoticeManage = renderNoticeManage;
+window.showBlacklistManage = showBlacklistManage;
+window.renderBlacklist = renderBlacklist;
+window.toggleBlacklist = toggleBlacklist;
+window.banUser = banUser;
+window.showToast = showToast;
+window.showForum = showForum;
+window.switchChannel = switchChannel;
+window.renderForumPosts = renderForumPosts;
+window.createPost = createPost;
+window.showPostDetail = showPostDetail;
+window.renderComments = renderComments;
+window.addComment = addComment;
+window.togglePostHarmonized = togglePostHarmonized;
+window.toggleCommentHarmonized = toggleCommentHarmonized;
+window.deletePost = deletePost;
+window.deleteComment = deleteComment;
+window.showProfile = showProfile;
+window.saveNickname = saveNickname;
+window.deleteAccount = deleteAccount;
+window.closeBanModal = closeBanModal;
     </script>
-
 </body>
 </html>
