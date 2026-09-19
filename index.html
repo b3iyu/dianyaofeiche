@@ -1406,6 +1406,33 @@ window.showProfile = showProfile;
 window.saveNickname = saveNickname;
 window.deleteAccount = deleteAccount;
 window.closeBanModal = closeBanModal;
+        
+// ============================================================
+// 视频链接修复（覆盖原函数）
+// ============================================================
+window.getVideoEmbedHtml = function(url) {
+    if (!url || !url.trim()) return '';
+    let u = url.trim();
+    const urlMatch = u.match(/(https?:\/\/)?[^\s，。！？、"'<>（）【】]+/);
+    if (urlMatch) u = urlMatch[0];
+    u = u.replace(/[，。！？、"'<>）】\s]+$/, '');
+    if (u && !/^https?:\/\//i.test(u)) {
+        u = 'https://' + u;
+    }
+    const bvMatch = u.match(/BV[a-zA-Z0-9]{10}/);
+    if (bvMatch) {
+        const bvid = bvMatch[0];
+        return '<div class="video-embed"><iframe src="https://player.bilibili.com/player.html?bvid=' + bvid + '&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="no" allowfullscreen="true"></iframe></div>';
+    }
+    if (u.includes('b23.tv')) {
+        return '<a class="video-link-btn" href="' + window.escapeHtml(u) + '" target="_blank" rel="noopener">📺 点击观看B站视频</a>';
+    }
+    if (u.includes('douyin.com')) {
+        return '<a class="video-link-btn" href="' + window.escapeHtml(u) + '" target="_blank" rel="noopener">📱 点击观看抖音视频</a>';
+    }
+    return '<a class="video-link-btn" href="' + window.escapeHtml(u) + '" target="_blank" rel="noopener">🔗 查看视频链接</a>';
+};
+
     </script>
 </body>
 </html>
