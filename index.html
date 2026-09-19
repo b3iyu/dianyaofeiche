@@ -1406,6 +1406,13 @@ window.showProfile = showProfile;
 window.saveNickname = saveNickname;
 window.deleteAccount = deleteAccount;
 window.closeBanModal = closeBanModal;
+
+// ============================================================
+// 覆盖显示名函数（管理员也显示昵称）
+// ============================================================
+window.makeDisplayName = function(role, nickname, username) {
+    return nickname || username;
+};
         
 // ============================================================
 // 视频链接修复（覆盖原函数）
