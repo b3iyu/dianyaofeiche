@@ -1908,6 +1908,36 @@ window.getVideoEmbedHtml = function(url) {
             };
         })();
 
+        // ============================================================
+        // 彻底修复：隐藏所有页面（防止残留）
+        // ============================================================
+        (function() {
+            window.hideAll = function() {
+                const ids = [
+                    'home','login','register','userPage','stationPage','ticketPage','buyPage',
+                    'orderSuccess','myOrderPage','adminPage','orderListPage','noticeManagePage',
+                    'blacklistPage','forumPage','postDetailPage','profilePage',
+                    'shopPage','walletManagePage'   // ← 新增：商城、充值页
+                ];
+                ids.forEach(id => { 
+                    const el = document.getElementById(id); 
+                    if (el) el.style.display = 'none'; 
+                });
+                
+                // 关闭所有弹窗
+                const buyModal = document.getElementById('buyModal');
+                if (buyModal) buyModal.classList.remove('show');
+                const banModal = document.getElementById('banModal');
+                if (banModal) banModal.classList.remove('show');
+                
+                // 清空错误提示
+                const lErr = document.getElementById('loginError');
+                const rErr = document.getElementById('regError');
+                if (lErr) lErr.innerText = '';
+                if (rErr) rErr.innerText = '';
+            };
+        })();
+
     </script>
 </body>
 </html>
