@@ -444,6 +444,7 @@
             <div class="ban-modal-content" style="border-color:#2ecc71;">
                 <div class="ban-modal-title" style="color:#2ecc71;">💳 确认购买</div>
                 <div id="buyModalInfo" style="color:#ccc; margin-bottom:20px; text-align:left; line-height:1.8;"></div>
+                                <input type="text" id="buyNote" placeholder="📝 备注（选填，商家可见）" maxlength="100" style="margin-bottom:10px;" />
                 <button class="submit-btn" onclick="confirmBuy('dianyao')" style="background:#ffcc00;">💰 电摇支付</button>
                 <button class="ban-modal-btn" onclick="closeBuyModal()" style="background:#666; margin-top:10px;">取消</button>
             </div>
@@ -1959,7 +1960,6 @@ window.getVideoEmbedHtml = function(url) {
                 if (rErr) rErr.innerText = '';
             };
         })();
-                <input type="text" id="buyNote" placeholder="📝 备注（选填，商家可见）" maxlength="100" style="margin-bottom:10px;" />
                     
         // ============================================================
         // 商城升级：商家订单、聊天、转账
