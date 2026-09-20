@@ -1863,6 +1863,51 @@ window.getVideoEmbedHtml = function(url) {
     return '<a class="video-link-btn" href="' + window.escapeHtml(u) + '" target="_blank" rel="noopener">🔗 查看视频链接</a>';
 };
 
+        // ============================================================
+        // 覆盖 createProduct：管理员上架时显示昵称
+        // ============================================================
+        window.createProduct = async function() {
+            const name = document.getElementById('prodName').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
+            const priceStr = document.getElementById('prodPrice').value.trim();
+            
+            if (!name) { showToast('请输入商品名称', 'error'); return; }
+            const price = parseFloat(priceStr);
+            if (!price || price <= 0) { showToast('请输入正确的价格', 'error'); return; }
+
+            // 🔑 关键：商家显示名用「昵称优先」，管理员也不例外
+            const sellerName = currentNickname || currentUsername;
+
+            try {
+                const { error } = await supabaseClient.from('shop_products').insert([{
+                    name: name,
+                    description: desc,
+                    price: price,
+                    seller_username: currentUsername,
+                    seller_display_name: sellerName,   // ← 用昵称
+                    is_active: true,
+                    created_at: new Date().toISOString()
+                }]);
+                if (error) { showToast('上架失败：' + error.message, 'error'); return; }
+                showToast('✅ 商品已上架！商家显示为「' + sellerName + '」', 'success', 4000);
+                switchShopTab('mine');
+            } catch (e) { showToast('异常：' + e.message, 'error'); }
+        };
+
+        // ============================================================
+        // 修复：充值页没被隐藏的问题
+        // ============================================================
+        (function() {
+            const originalHideAll = window.hideAll;
+            window.hideAll = function() {
+                if (originalHideAll) originalHideAll();
+                const w = document.getElementById('walletManagePage');
+                if (w) w.style.display = 'none';
+                const b = document.getElementById('buyModal');
+                if (b) b.classList.remove('show');
+            };
+        })();
+
     </script>
 </body>
 </html>
