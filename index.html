@@ -172,6 +172,17 @@
         .ban-modal-btn:hover { background:#ff8585; }
 
         @media (max-width:600px) { header { flex-direction:column; align-items:stretch; text-align:center; } .nav { display:flex; justify-content:center; flex-wrap:wrap; } .nav a { margin:4px 8px; } .home-box h1 { font-size:36px; } .user-menu, .admin-menu { grid-template-columns:1fr 1fr; } .ticket-list { grid-template-columns:1fr; } .order-table { font-size:13px; } .order-table th, .order-table td { padding:8px 4px; } }
+        
+        /* 商城样式 */
+        .shop-page { display:none; background:rgba(255,255,255,0.08); padding:30px; border-radius:12px; margin-top:20px; }
+        .shop-tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .shop-tab { padding:8px 18px; background:rgba(255,255,255,0.08); border-radius:20px; cursor:pointer; font-size:14px; user-select:none; border:1px solid transparent; }
+        .shop-tab:hover { background:rgba(255,204,0,0.15); }
+        .shop-tab.active { background:#ffcc00; color:#000; font-weight:bold; border-color:#ffcc00; }
+        .shop-card { background:rgba(0,0,0,0.2); padding:18px; border-radius:10px; margin-bottom:12px; display:flex; gap:15px; align-items:center; border-left:3px solid #ffcc00; }
+        .shop-card:hover { background:rgba(0,0,0,0.3); }
+        .wallet-bar { background:rgba(255,204,0,0.1); border:1px solid rgba(255,204,0,0.3); padding:12px 18px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .wallet-balance { color:#ffcc00; font-size:20px; font-weight:bold; }
         @media (max-width:400px) { .user-menu, .admin-menu { grid-template-columns:1fr; } }
     </style>
 </head>
@@ -246,6 +257,7 @@
                 <div class="menu-card" onclick="showStationPage()"><h3>🎫 在线购票</h3><p>选择站点和票种，快速下单</p></div>
                 <div class="menu-card" onclick="showMyOrder()"><h3>📦 我的订单</h3><p>查看历史购票记录</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 玩家论坛</h3><p>交流讨论，畅所欲言</p></div>
+                                <div class="menu-card" onclick="showShop()"><h3>🛒 电摇商城</h3><p>商家上架 / 用户购买</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称 / 注销账号</p></div>
             </div>
         </div>
@@ -364,6 +376,7 @@
                 <div class="menu-card" onclick="showOrderList()"><h3>📋 预定管理</h3><p>查看所有用户购票订单</p></div>
                 <div class="menu-card" onclick="showNoticeManage()"><h3>📢 公告管理</h3><p>发布、编辑、删除网站公告</p></div>
                 <div class="menu-card" onclick="showBlacklistManage()"><h3>🚫 黑名单管理</h3><p>封禁/解禁用户</p></div>
+                                <div class="menu-card" onclick="showWalletManage()"><h3>💰 钱包充值</h3><p>线下收款后为用户充值</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 论坛管理</h3><p>和谐违规帖子或评论</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称</p></div>
             </div>
@@ -381,6 +394,64 @@
             <div class="add-notice-box"><h4>发布新公告</h4><div class="add-row"><input type="text" id="newNoticeContent" placeholder="输入公告内容" /><button class="btn" onclick="addNotice()">发布</button></div></div>
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;"><span style="color:#aaa; font-size:14px;">共 <span id="noticeCount">0</span> 条公告</span><button class="btn btn-sm btn-outline" onclick="renderNoticeManage()">⟳ 刷新列表</button></div>
             <div id="noticeManageList"></div>
+        </div>
+        
+        <!-- 商城 -->
+        <div id="shopPage" class="shop-page">
+            <button class="back-btn" onclick="backToUser()">← 返回</button>
+            <h3 class="page-title">🛒 电摇商城</h3>
+
+            <div class="wallet-bar">
+                <span>💰 我的余额：<span class="wallet-balance" id="walletBalance">¥0.00</span></span>
+                <span style="color:#888; font-size:12px;">💡 充值请线下联系管理员</span>
+            </div>
+
+            <div class="shop-tabs">
+                <div class="shop-tab active" data-tab="all" onclick="switchShopTab('all')">🛍️ 所有商品</div>
+                <div class="shop-tab" data-tab="mine" onclick="switchShopTab('mine')">📦 我的商品</div>
+                <div class="shop-tab" data-tab="add" onclick="switchShopTab('add')">➕ 上架商品</div>
+                <div class="shop-tab" data-tab="orders" onclick="switchShopTab('orders')">📋 我的订单</div>
+            </div>
+
+            <div id="shopContent"></div>
+        </div>
+
+        <!-- 购买弹窗 -->
+        <div id="buyModal" class="ban-modal">
+            <div class="ban-modal-content" style="border-color:#2ecc71;">
+                <div class="ban-modal-title" style="color:#2ecc71;">💳 确认购买</div>
+                <div id="buyModalInfo" style="color:#ccc; margin-bottom:20px; text-align:left; line-height:1.8;"></div>
+                <button class="submit-btn" onclick="confirmBuy('dianyao')" style="background:#ffcc00;">💰 电摇支付</button>
+                <button class="submit-btn" onclick="confirmBuy('wechat')" style="background:#2ecc71; color:#fff; margin-top:10px;">💚 微信支付（线下）</button>
+                <button class="ban-modal-btn" onclick="closeBuyModal()" style="background:#666; margin-top:10px;">取消</button>
+            </div>
+        </div>
+
+        <!-- 管理员：钱包充值页 -->
+        <div id="walletManagePage" class="blacklist-page">
+            <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
+            <h3 class="page-title">💰 钱包充值管理</h3>
+            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">线下收到现金后，在此为用户充值到「电摇支付」余额</p>
+
+            <div class="add-notice-box" style="border-left:4px solid #2ecc71;">
+                <h4 style="color:#2ecc71;">💵 为用户充值</h4>
+                <input type="text" id="rechargeUsername" placeholder="用户名" />
+                <input type="number" id="rechargeAmount" placeholder="充值金额（元）" step="0.01" />
+                <button class="btn" style="background:#2ecc71; color:#fff; margin-top:10px;" onclick="rechargeUser()">确认充值</button>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>当前余额</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="walletManageBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- 黑名单 / 封号管理 -->
@@ -1406,6 +1477,358 @@ window.showProfile = showProfile;
 window.saveNickname = saveNickname;
 window.deleteAccount = deleteAccount;
 window.closeBanModal = closeBanModal;
+        
+        // ============================================================
+        // 商城 & 支付系统
+        // ============================================================
+        let currentBalance = 0;
+        let currentBuyProduct = null;
+        let currentShopTab = 'all';
+
+        // 加载钱包余额
+        async function loadWallet() {
+            try {
+                const { data } = await supabaseClient
+                    .from('user_wallet').select('balance').eq('username', currentUsername).maybeSingle();
+                if (data) currentBalance = parseFloat(data.balance) || 0;
+                else {
+                    // 首次进入，创建钱包
+                    currentBalance = 0;
+                    await supabaseClient.from('user_wallet').insert([{ username: currentUsername, balance: 0 }]);
+                }
+                document.getElementById('walletBalance').innerText = '¥' + currentBalance.toFixed(2);
+            } catch (e) { console.warn('钱包加载失败:', e); }
+        }
+
+        // 显示商城
+        async function showShop() {
+            if (!currentUsername) { showToast('请先登录', 'error'); return; }
+            hideAll(); enterFull();
+            if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+            else document.getElementById('userPage').style.display = 'block';
+            document.getElementById('shopPage').style.display = 'block';
+            await loadWallet();
+            switchShopTab(currentShopTab);
+        }
+
+        // 切换标签
+        function switchShopTab(tab) {
+            currentShopTab = tab;
+            document.querySelectorAll('.shop-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+            if (tab === 'all') renderShopProducts();
+            else if (tab === 'mine') renderMyProducts();
+            else if (tab === 'add') renderAddProductForm();
+            else if (tab === 'orders') renderMyShopOrders();
+        }
+
+        // 所有商品
+        async function renderShopProducts() {
+            const box = document.getElementById('shopContent');
+            box.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+            const { data, error } = await supabaseClient.from('shop_products').select('*').eq('is_active', true);
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败：' + error.message + '</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">商城暂无商品，快来上架第一个吧！</div>'; return; }
+            data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            box.innerHTML = '';
+            data.forEach(p => {
+                const isMine = p.seller_username === currentUsername;
+                const card = document.createElement('div');
+                card.className = 'shop-card';
+                card.innerHTML = `
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:17px; font-weight:bold; margin-bottom:5px; color:#fff;">${escapeHtml(p.name)}</div>
+                        <div style="color:#bbb; font-size:13px; margin-bottom:8px; word-break:break-all;">${escapeHtml(p.description || '')}</div>
+                        <div style="color:#ff6b6b; font-size:20px; font-weight:bold;">¥${parseFloat(p.price).toFixed(2)}</div>
+                        <div style="color:#888; font-size:12px; margin-top:4px;">商家：${escapeHtml(p.seller_display_name || p.seller_username)}</div>
+                    </div>
+                    <div>${isMine ? 
+                        `<button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">下架</button>` : 
+                        `<button class="btn btn-sm" onclick="buyProduct(${p.id})">购买</button>`
+                    }</div>
+                `;
+                box.appendChild(card);
+            });
+        }
+
+        // 我的商品
+        async function renderMyProducts() {
+            const box = document.getElementById('shopContent');
+            box.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+            const { data, error } = await supabaseClient.from('shop_products').select('*').eq('seller_username', currentUsername);
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败：' + error.message + '</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">您还没有上架商品</div>'; return; }
+            data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            box.innerHTML = '';
+            data.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'shop-card';
+                const statusTag = p.is_active ? '<span style="color:#2ecc71; font-size:12px;">● 在售</span>' : '<span style="color:#888; font-size:12px;">● 已下架</span>';
+                card.innerHTML = `
+                    <div style="flex:1;">
+                        <div style="font-size:17px; font-weight:bold; margin-bottom:5px;">${escapeHtml(p.name)} ${statusTag}</div>
+                        <div style="color:#bbb; font-size:13px; margin-bottom:8px;">${escapeHtml(p.description || '')}</div>
+                        <div style="color:#ff6b6b; font-size:18px; font-weight:bold;">¥${parseFloat(p.price).toFixed(2)}</div>
+                    </div>
+                    <div>
+                        ${p.is_active ? `<button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">下架</button>` : ''}
+                    </div>
+                `;
+                box.appendChild(card);
+            });
+        }
+
+        // 上架表单
+        function renderAddProductForm() {
+            const box = document.getElementById('shopContent');
+            box.innerHTML = `
+                <div class="add-notice-box" style="border-left:4px solid #2ecc71;">
+                    <h4 style="color:#2ecc71;">➕ 上架新商品</h4>
+                    <input type="text" id="prodName" placeholder="商品名称（必填）" maxlength="50" />
+                    <textarea id="prodDesc" placeholder="商品描述（选填）" maxlength="200"></textarea>
+                    <input type="number" id="prodPrice" placeholder="价格（元，如 9.9）" step="0.01" min="0.01" />
+                    <button class="btn" style="background:#2ecc71; color:#fff; margin-top:10px;" onclick="createProduct()">确认上架</button>
+                </div>
+            `;
+        }
+
+        // 创建商品
+        async function createProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
+            const priceStr = document.getElementById('prodPrice').value.trim();
+            if (!name) { showToast('请输入商品名称', 'error'); return; }
+            const price = parseFloat(priceStr);
+            if (!price || price <= 0) { showToast('请输入正确的价格', 'error'); return; }
+            try {
+                const { error } = await supabaseClient.from('shop_products').insert([{
+                    name, description: desc, price,
+                    seller_username: currentUsername,
+                    seller_display_name: currentDisplayName,
+                    is_active: true,
+                    created_at: new Date().toISOString()
+                }]);
+                if (error) { showToast('上架失败：' + error.message, 'error'); return; }
+                showToast('✅ 商品已上架！', 'success');
+                switchShopTab('mine');
+            } catch (e) { showToast('异常：' + e.message, 'error'); }
+        }
+
+        // 下架
+        async function deleteProduct(id) {
+            if (!confirm('确定要下架这个商品吗？')) return;
+            const { error } = await supabaseClient.from('shop_products').update({ is_active: false }).eq('id', id);
+            if (error) { showToast('下架失败：' + error.message, 'error'); return; }
+            showToast('✅ 已下架', 'success');
+            if (currentShopTab === 'mine') renderMyProducts();
+            else renderShopProducts();
+        }
+
+        // 点击购买
+        async function buyProduct(id) {
+            const { data, error } = await supabaseClient.from('shop_products').select('*').eq('id', id).maybeSingle();
+            if (error || !data) { showToast('商品不存在', 'error'); return; }
+            if (data.seller_username === currentUsername) { showToast('不能购买自己的商品', 'error'); return; }
+            currentBuyProduct = data;
+            const info = document.getElementById('buyModalInfo');
+            info.innerHTML = `
+                <p>商品：<b style="color:#fff;">${escapeHtml(data.name)}</b></p>
+                <p>商家：${escapeHtml(data.seller_display_name || data.seller_username)}</p>
+                <p>价格：<b style="color:#ff6b6b; font-size:20px;">¥${parseFloat(data.price).toFixed(2)}</b></p>
+                <p style="margin-top:12px; font-size:13px; color:#888;">当前余额：¥${currentBalance.toFixed(2)}</p>
+            `;
+            document.getElementById('buyModal').classList.add('show');
+        }
+
+        function closeBuyModal() {
+            document.getElementById('buyModal').classList.remove('show');
+            currentBuyProduct = null;
+        }
+
+        // 确认购买
+        async function confirmBuy(method) {
+            if (!currentBuyProduct) return;
+            const p = currentBuyProduct;
+            const price = parseFloat(p.price);
+
+            if (method === 'dianyao') {
+                // 电摇支付
+                if (currentBalance < price) {
+                    showToast('❌ 余额不足！请线下联系管理员充值', 'error', 5000);
+                    return;
+                }
+                // 扣款
+                const newBalance = currentBalance - price;
+                const { error: wErr } = await supabaseClient.from('user_wallet')
+                    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+                    .eq('username', currentUsername);
+                if (wErr) { showToast('扣款失败：' + wErr.message, 'error'); return; }
+
+                // 卖家加钱
+                const { data: sellerWallet } = await supabaseClient.from('user_wallet')
+                    .select('balance').eq('username', p.seller_username).maybeSingle();
+                const sellerBalance = sellerWallet ? parseFloat(sellerWallet.balance) : 0;
+                if (sellerWallet) {
+                    await supabaseClient.from('user_wallet').update({ balance: sellerBalance + price, updated_at: new Date().toISOString() }).eq('username', p.seller_username);
+                } else {
+                    await supabaseClient.from('user_wallet').insert([{ username: p.seller_username, balance: price }]);
+                }
+
+                // 记录订单
+                await supabaseClient.from('shop_orders').insert([{
+                    product_id: p.id, product_name: p.name,
+                    buyer_username: currentUsername, seller_username: p.seller_username,
+                    price: price, payment_method: '电摇支付', status: 'paid',
+                    created_at: new Date().toISOString()
+                }]);
+
+                currentBalance = newBalance;
+                document.getElementById('walletBalance').innerText = '¥' + currentBalance.toFixed(2);
+                showToast('✅ 购买成功！已通过电摇支付扣款 ¥' + price.toFixed(2), 'success', 4000);
+                closeBuyModal();
+
+            } else if (method === 'wechat') {
+                // 微信支付 → 提示线下
+                await supabaseClient.from('shop_orders').insert([{
+                    product_id: p.id, product_name: p.name,
+                    buyer_username: currentUsername, seller_username: p.seller_username,
+                    price: price, payment_method: '微信支付（线下）', status: 'pending',
+                    created_at: new Date().toISOString()
+                }]);
+                closeBuyModal();
+                showToast('📱 已创建订单，请线下联系商家完成微信支付', 'info', 6000);
+            }
+        }
+
+        // 我的商城订单
+        async function renderMyShopOrders() {
+            const box = document.getElementById('shopContent');
+            box.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+            const { data, error } = await supabaseClient.from('shop_orders').select('*').eq('buyer_username', currentUsername);
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败：' + error.message + '</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无购买记录</div>'; return; }
+            data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            box.innerHTML = '<div style="overflow-x:auto;"><table class="order-table"><thead><tr><th>商品</th><th>价格</th><th>支付方式</th><th>状态</th><th>时间</th></tr></thead><tbody></tbody></table></div>';
+            const tbody = box.querySelector('tbody');
+            data.forEach(o => {
+                const statusText = o.status === 'paid' ? '✅ 已支付' : '⏳ 待支付';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(o.product_name || '-')}</td>
+                    <td>¥${parseFloat(o.price || 0).toFixed(2)}</td>
+                    <td>${escapeHtml(o.payment_method || '-')}</td>
+                    <td>${statusText}</td>
+                    <td>${o.created_at ? new Date(o.created_at).toLocaleString() : '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ============================================================
+        // 管理员：钱包充值
+        // ============================================================
+        async function showWalletManage() {
+            hideAll(); enterFull();
+            document.getElementById('adminPage').style.display = 'block';
+            document.getElementById('walletManagePage').style.display = 'block';
+            await renderWalletManage();
+        }
+
+        async function renderWalletManage() {
+            const tbody = document.getElementById('walletManageBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="3" class="empty-tip">加载中...</td></tr>';
+            const { data: users } = await supabaseClient.from('app_users').select('username, role, nickname').eq('role', 'user');
+            const { data: wallets } = await supabaseClient.from('user_wallet').select('*');
+            const walletMap = {};
+            (wallets || []).forEach(w => { walletMap[w.username] = parseFloat(w.balance) || 0; });
+
+            if (!users || users.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="empty-tip">暂无用户</td></tr>'; return; }
+            tbody.innerHTML = '';
+            users.forEach(u => {
+                const bal = walletMap[u.username] || 0;
+                const display = u.nickname ? `${u.nickname}（${u.username}）` : u.username;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(display)}</td>
+                    <td style="color:#ffcc00; font-weight:bold;">¥${bal.toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="quickRecharge('${escapeHtml(u.username)}')">充值</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function rechargeUser() {
+            const username = document.getElementById('rechargeUsername').value.trim();
+            const amountStr = document.getElementById('rechargeAmount').value.trim();
+            if (!username) { showToast('请输入用户名', 'error'); return; }
+            const amount = parseFloat(amountStr);
+            if (!amount || amount <= 0) { showToast('请输入正确的金额', 'error'); return; }
+
+            const { data: user } = await supabaseClient.from('app_users').select('username').eq('username', username).maybeSingle();
+            if (!user) { showToast('用户不存在', 'error'); return; }
+
+            const { data: wallet } = await supabaseClient.from('user_wallet').select('*').eq('username', username).maybeSingle();
+            const oldBal = wallet ? parseFloat(wallet.balance) : 0;
+            const newBal = oldBal + amount;
+
+            if (wallet) {
+                await supabaseClient.from('user_wallet').update({ balance: newBal, updated_at: new Date().toISOString() }).eq('username', username);
+            } else {
+                await supabaseClient.from('user_wallet').insert([{ username, balance: newBal }]);
+            }
+
+            await supabaseClient.from('wallet_recharges').insert([{
+                username, amount, admin_username: currentUsername, created_at: new Date().toISOString()
+            }]);
+
+            showToast(`✅ 已为「${username}」充值 ¥${amount.toFixed(2)}`, 'success');
+            document.getElementById('rechargeUsername').value = '';
+            document.getElementById('rechargeAmount').value = '';
+            await renderWalletManage();
+        }
+
+        async function quickRecharge(username) {
+            const amtStr = prompt(`为用户「${username}」充值多少元？`);
+            if (amtStr === null) return;
+            const amount = parseFloat(amtStr);
+            if (!amount || amount <= 0) { showToast('金额无效', 'error'); return; }
+
+            const { data: wallet } = await supabaseClient.from('user_wallet').select('*').eq('username', username).maybeSingle();
+            const oldBal = wallet ? parseFloat(wallet.balance) : 0;
+            const newBal = oldBal + amount;
+
+            if (wallet) {
+                await supabaseClient.from('user_wallet').update({ balance: newBal, updated_at: new Date().toISOString() }).eq('username', username);
+            } else {
+                await supabaseClient.from('user_wallet').insert([{ username, balance: newBal }]);
+            }
+            await supabaseClient.from('wallet_recharges').insert([{
+                username, amount, admin_username: currentUsername, created_at: new Date().toISOString()
+            }]);
+            showToast(`✅ 已充值 ¥${amount.toFixed(2)}`, 'success');
+            await renderWalletManage();
+        }
+
+        // 暴露全局函数
+        window.showShop = showShop;
+        window.switchShopTab = switchShopTab;
+        window.renderShopProducts = renderShopProducts;
+        window.renderMyProducts = renderMyProducts;
+        window.renderAddProductForm = renderAddProductForm;
+        window.createProduct = createProduct;
+        window.deleteProduct = deleteProduct;
+        window.buyProduct = buyProduct;
+        window.closeBuyModal = closeBuyModal;
+        window.confirmBuy = confirmBuy;
+        window.renderMyShopOrders = renderMyShopOrders;
+        window.showWalletManage = showWalletManage;
+        window.renderWalletManage = renderWalletManage;
+        window.rechargeUser = rechargeUser;
+        window.quickRecharge = quickRecharge;
 
 // ============================================================
 // 覆盖显示名函数（管理员也显示昵称）
