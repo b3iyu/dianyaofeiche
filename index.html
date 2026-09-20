@@ -416,13 +416,35 @@
             <div id="shopContent"></div>
         </div>
 
+        <!-- 商家订单页 -->
+        <div id="sellerOrdersPage" class="shop-page">
+            <button class="back-btn" onclick="showShop()">← 返回商城</button>
+            <h3 class="page-title">📋 我的订单（商家）</h3>
+                            <div class="shop-tab" data-tab="seller" onclick="switchShopTab('seller')">📥 商家订单</div>
+            <div id="sellerOrdersList"></div>
+        </div>
+
+        <!-- 聊天页 -->
+        <div id="chatPage" class="shop-page">
+            <button class="back-btn" onclick="backFromChat()">← 返回</button>
+            <h3 class="page-title" id="chatTitle">💬 聊天</h3>
+            <div id="chatMessages" style="background:rgba(0,0,0,0.2); border-radius:10px; padding:15px; min-height:300px; max-height:60vh; overflow-y:auto; margin-bottom:15px;">
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <input type="text" id="chatInput" placeholder="输入消息..." style="flex:1; margin:0;" />
+                <button class="btn" onclick="sendChatMessage()">发送</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="transferAmount" placeholder="转账金额" step="0.01" style="flex:1; margin:0;" />
+                <button class="btn btn-success" onclick="transferMoney()">💰 转账</button>
+            </div>
+        </div>
         <!-- 购买弹窗 -->
         <div id="buyModal" class="ban-modal">
             <div class="ban-modal-content" style="border-color:#2ecc71;">
                 <div class="ban-modal-title" style="color:#2ecc71;">💳 确认购买</div>
                 <div id="buyModalInfo" style="color:#ccc; margin-bottom:20px; text-align:left; line-height:1.8;"></div>
                 <button class="submit-btn" onclick="confirmBuy('dianyao')" style="background:#ffcc00;">💰 电摇支付</button>
-                <button class="submit-btn" onclick="confirmBuy('wechat')" style="background:#2ecc71; color:#fff; margin-top:10px;">💚 微信支付（线下）</button>
                 <button class="ban-modal-btn" onclick="closeBuyModal()" style="background:#666; margin-top:10px;">取消</button>
             </div>
         </div>
@@ -1935,6 +1957,262 @@ window.getVideoEmbedHtml = function(url) {
                 const rErr = document.getElementById('regError');
                 if (lErr) lErr.innerText = '';
                 if (rErr) rErr.innerText = '';
+            };
+        })();
+                <input type="text" id="buyNote" placeholder="📝 备注（选填，商家可见）" maxlength="100" style="margin-bottom:10px;" />
+                    
+        // ============================================================
+        // 商城升级：商家订单、聊天、转账
+        // ============================================================
+        let currentChatOrder = null;
+        let currentChatWith = null;
+        let chatTimer = null;
+
+        // 覆盖购买：加备注，去掉微信
+        window.buyProduct = async function(id) {
+            const { data, error } = await supabaseClient.from('shop_products').select('*').eq('id', id).maybeSingle();
+            if (error || !data) { showToast('商品不存在', 'error'); return; }
+            if (data.seller_username === currentUsername) { showToast('不能购买自己的商品', 'error'); return; }
+            currentBuyProduct = data;
+            const info = document.getElementById('buyModalInfo');
+            info.innerHTML = `
+                <p>商品：<b style="color:#fff;">${escapeHtml(data.name)}</b></p>
+                <p>商家：${escapeHtml(data.seller_display_name || data.seller_username)}</p>
+                <p>价格：<b style="color:#ff6b6b; font-size:20px;">¥${parseFloat(data.price).toFixed(2)}</b></p>
+                <p style="margin-top:12px; font-size:13px; color:#888;">当前余额：¥${currentBalance.toFixed(2)}</p>
+            `;
+            const noteEl = document.getElementById('buyNote');
+            if (noteEl) noteEl.value = '';
+            document.getElementById('buyModal').classList.add('show');
+        };
+
+        // 覆盖确认购买：只有电摇支付
+        window.confirmBuy = async function() {
+            if (!currentBuyProduct) return;
+            const p = currentBuyProduct;
+            const price = parseFloat(p.price);
+            const note = (document.getElementById('buyNote')?.value || '').trim();
+
+            if (currentBalance < price) {
+                showToast('❌ 余额不足！请线下联系管理员充值', 'error', 5000);
+                return;
+            }
+            const newBalance = currentBalance - price;
+            const { error: wErr } = await supabaseClient.from('user_wallet')
+                .update({ balance: newBalance, updated_at: new Date().toISOString() })
+                .eq('username', currentUsername);
+            if (wErr) { showToast('扣款失败：' + wErr.message, 'error'); return; }
+
+            // 卖家加钱
+            const { data: sellerWallet } = await supabaseClient.from('user_wallet').select('balance').eq('username', p.seller_username).maybeSingle();
+            if (sellerWallet) {
+                await supabaseClient.from('user_wallet').update({ balance: parseFloat(sellerWallet.balance) + price }).eq('username', p.seller_username);
+            } else {
+                await supabaseClient.from('user_wallet').insert([{ username: p.seller_username, balance: price }]);
+            }
+
+            // 记录订单（带备注）
+            const { data: orderData, error: oErr } = await supabaseClient.from('shop_orders').insert([{
+                product_id: p.id, product_name: p.name,
+                buyer_username: currentUsername, seller_username: p.seller_username,
+                price: price, payment_method: '电摇支付', status: 'paid',
+                note: note || null,
+                buyer_read: true, seller_read: false,
+                created_at: new Date().toISOString()
+            }]).select().single();
+
+            if (oErr) { showToast('订单创建失败：' + oErr.message, 'error'); return; }
+
+            currentBalance = newBalance;
+            document.getElementById('walletBalance').innerText = '¥' + currentBalance.toFixed(2);
+            showToast('✅ 购买成功！', 'success');
+            closeBuyModal();
+
+            // 自动跳转聊天
+            if (orderData) {
+                setTimeout(() => openChat(orderData.id, p.seller_username, p.name), 800);
+            }
+        };
+
+        // 商家订单列表
+        window.renderSellerOrders = async function() {
+            const box = document.getElementById('shopContent');
+            box.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+            const { data, error } = await supabaseClient.from('shop_orders').select('*').eq('seller_username', currentUsername);
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败：' + error.message + '</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无订单</div>'; return; }
+            data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            box.innerHTML = '';
+            data.forEach(o => {
+                const card = document.createElement('div');
+                card.className = 'shop-card';
+                card.style.borderLeftColor = '#2ecc71';
+                card.innerHTML = `
+                    <div style="flex:1;">
+                        <div style="font-size:16px; font-weight:bold; margin-bottom:5px;">📦 ${escapeHtml(o.product_name)}</div>
+                        <div style="color:#bbb; font-size:13px;">买家：${escapeHtml(o.buyer_username)}</div>
+                        <div style="color:#ff6b6b; font-size:18px; font-weight:bold; margin:5px 0;">¥${parseFloat(o.price).toFixed(2)}</div>
+                        ${o.note ? `<div style="color:#ffcc00; font-size:13px; background:rgba(255,204,0,0.1); padding:6px 10px; border-radius:6px; margin-top:6px;">📝 备注：${escapeHtml(o.note)}</div>` : ''}
+                        <div style="color:#888; font-size:12px; margin-top:4px;">${o.created_at ? new Date(o.created_at).toLocaleString() : ''}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <button class="btn btn-sm" onclick="openChat(${o.id}, '${escapeHtml(o.buyer_username)}', '${escapeHtml(o.product_name)}')">💬 聊天</button>
+                    </div>
+                `;
+                box.appendChild(card);
+            });
+        };
+
+        // 打开聊天
+        window.openChat = async function(orderId, withUser, productName) {
+            currentChatOrder = orderId;
+            currentChatWith = withUser;
+            hideAll(); enterFull();
+            if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+            else document.getElementById('userPage').style.display = 'block';
+            document.getElementById('chatPage').style.display = 'block';
+            document.getElementById('chatTitle').innerText = '💬 与 ' + withUser + ' 聊天 · ' + productName;
+            document.getElementById('chatInput').value = '';
+            document.getElementById('transferAmount').value = '';
+            await loadChatMessages();
+            // 每 3 秒刷新
+            if (chatTimer) clearInterval(chatTimer);
+            chatTimer = setInterval(loadChatMessages, 3000);
+        };
+
+        window.backFromChat = function() {
+            if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+            currentChatOrder = null;
+            currentChatWith = null;
+            showShop();
+        };
+
+        // 加载聊天消息
+        window.loadChatMessages = async function() {
+            if (!currentChatOrder) return;
+            const box = document.getElementById('chatMessages');
+            const { data, error } = await supabaseClient.from('shop_messages').select('*').eq('order_id', currentChatOrder);
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">暂无消息，开始聊天吧</div>'; return; }
+            data.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+            box.innerHTML = '';
+            data.forEach(m => {
+                const isMe = m.from_username === currentUsername;
+                const div = document.createElement('div');
+                div.style.cssText = `margin-bottom:12px; display:flex; ${isMe ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}`;
+                const time = m.created_at ? new Date(m.created_at).toLocaleString() : '';
+                if (m.msg_type === 'transfer') {
+                    div.innerHTML = `<div style="max-width:70%; background:${isMe ? 'rgba(46,204,113,0.2)' : 'rgba(255,204,0,0.15)'}; padding:10px 14px; border-radius:10px; border:1px solid ${isMe ? '#2ecc71' : '#ffcc00'};">
+                        <div style="color:${isMe ? '#2ecc71' : '#ffcc00'}; font-weight:bold;">💰 转账 ¥${parseFloat(m.amount).toFixed(2)}</div>
+                        <div style="color:#888; font-size:11px; margin-top:4px;">${time}</div>
+                    </div>`;
+                } else {
+                    div.innerHTML = `<div style="max-width:70%; background:${isMe ? 'rgba(255,204,0,0.15)' : 'rgba(255,255,255,0.08)'}; padding:10px 14px; border-radius:10px;">
+                        <div style="color:#eee; word-break:break-word;">${escapeHtml(m.content)}</div>
+                        <div style="color:#888; font-size:11px; margin-top:4px;">${time}</div>
+                    </div>`;
+                }
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
+        };
+
+        // 发送消息
+        window.sendChatMessage = async function() {
+            const inp = document.getElementById('chatInput');
+            const content = inp.value.trim();
+            if (!content) return;
+            if (!currentChatOrder) return;
+            const { error } = await supabaseClient.from('shop_messages').insert([{
+                order_id: currentChatOrder,
+                from_username: currentUsername,
+                to_username: currentChatWith,
+                content: content,
+                msg_type: 'text',
+                created_at: new Date().toISOString()
+            }]);
+            if (error) { showToast('发送失败：' + error.message, 'error'); return; }
+            inp.value = '';
+            await loadChatMessages();
+        };
+
+        // 转账
+        window.transferMoney = async function() {
+            const amtStr = document.getElementById('transferAmount').value.trim();
+            const amount = parseFloat(amtStr);
+            if (!amount || amount <= 0) { showToast('请输入正确金额', 'error'); return; }
+            if (!currentChatWith) return;
+
+            // 重新加载余额
+            const { data: myWallet } = await supabaseClient.from('user_wallet').select('balance').eq('username', currentUsername).maybeSingle();
+            const myBal = myWallet ? parseFloat(myWallet.balance) : 0;
+            if (myBal < amount) { showToast('余额不足！当前余额：¥' + myBal.toFixed(2), 'error', 4000); return; }
+
+            if (!confirm(`确定向「${currentChatWith}」转账 ¥${amount.toFixed(2)} 吗？`)) return;
+
+            // 扣自己
+            await supabaseClient.from('user_wallet').update({ balance: myBal - amount, updated_at: new Date().toISOString() }).eq('username', currentUsername);
+
+            // 加对方
+            const { data: toWallet } = await supabaseClient.from('user_wallet').select('balance').eq('username', currentChatWith).maybeSingle();
+            if (toWallet) {
+                await supabaseClient.from('user_wallet').update({ balance: parseFloat(toWallet.balance) + amount, updated_at: new Date().toISOString() }).eq('username', currentChatWith);
+            } else {
+                await supabaseClient.from('user_wallet').insert([{ username: currentChatWith, balance: amount }]);
+            }
+
+            // 记录转账
+            await supabaseClient.from('wallet_transfers').insert([{
+                from_username: currentUsername,
+                to_username: currentChatWith,
+                amount: amount,
+                order_id: currentChatOrder,
+                created_at: new Date().toISOString()
+            }]);
+
+            // 聊天记录
+            await supabaseClient.from('shop_messages').insert([{
+                order_id: currentChatOrder,
+                from_username: currentUsername,
+                to_username: currentChatWith,
+                content: '转账 ¥' + amount.toFixed(2),
+                msg_type: 'transfer',
+                amount: amount,
+                created_at: new Date().toISOString()
+            }]);
+
+            currentBalance = myBal - amount;
+            const wb = document.getElementById('walletBalance');
+            if (wb) wb.innerText = '¥' + currentBalance.toFixed(2);
+            document.getElementById('transferAmount').value = '';
+            showToast('✅ 转账成功 ¥' + amount.toFixed(2), 'success');
+            await loadChatMessages();
+        };
+
+        // 覆盖 switchShopTab，加 seller 分支
+        (function() {
+            const orig = window.switchShopTab;
+            window.switchShopTab = function(tab) {
+                currentShopTab = tab;
+                document.querySelectorAll('.shop-tab').forEach(t => {
+                    t.classList.toggle('active', t.dataset.tab === tab);
+                });
+                if (tab === 'all') renderShopProducts();
+                else if (tab === 'mine') renderMyProducts();
+                else if (tab === 'add') renderAddProductForm();
+                else if (tab === 'orders') renderMyShopOrders();
+                else if (tab === 'seller') renderSellerOrders();
+            };
+        })();
+
+        // 覆盖 hideAll，加聊天页
+        (function() {
+            const orig = window.hideAll;
+            window.hideAll = function() {
+                if (orig) orig();
+                const extra = ['sellerOrdersPage', 'chatPage'];
+                extra.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+                if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
             };
         })();
 
