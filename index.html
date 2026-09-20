@@ -256,6 +256,7 @@
             <div class="user-menu">
                 <div class="menu-card" onclick="showStationPage()"><h3>🎫 在线购票</h3><p>选择站点和票种，快速下单</p></div>
                 <div class="menu-card" onclick="showMyOrder()"><h3>📦 我的订单</h3><p>查看历史购票记录</p></div>
+                                <div class="menu-card" onclick="showChatList()"><h3>💬 聊天</h3><p>和好友 / 客服聊天</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 玩家论坛</h3><p>交流讨论，畅所欲言</p></div>
                                 <div class="menu-card" onclick="showShop()"><h3>🛒 电摇商城</h3><p>商家上架 / 用户购买</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称 / 注销账号</p></div>
@@ -437,6 +438,68 @@
             <div style="display:flex; gap:8px;">
                 <input type="number" id="transferAmount" placeholder="转账金额" step="0.01" style="flex:1; margin:0;" />
                 <button class="btn btn-success" onclick="transferMoney()">💰 转账</button>
+            </div>
+        </div>
+        
+        <!-- 聊天会话列表 -->
+        <div id="chatListPage" class="shop-page">
+            <button class="back-btn" onclick="backToUser()">← 返回</button>
+            <h3 class="page-title">💬 我的聊天</h3>
+
+            <div class="add-notice-box" style="border-left:4px solid #2ecc71;">
+                <h4 style="color:#2ecc71;">➕ 添加好友 / 开始聊天</h4>
+                <input type="text" id="addFriendUsername" placeholder="输入对方用户名" />
+                <button class="btn btn-success" onclick="addFriendAndChat()" style="margin-top:10px;">添加并开始聊天</button>
+            </div>
+
+            <div style="color:#ffcc00; font-size:16px; margin-bottom:10px;">👥 最近联系人</div>
+            <div id="chatSessionList"></div>
+        </div>
+
+        <!-- 聊天室（通用） -->
+        <div id="chatRoomPage" class="shop-page">
+            <button class="back-btn" onclick="showChatList()">← 返回列表</button>
+            <h3 class="page-title" id="chatRoomTitle">💬 聊天</h3>
+            <div id="chatRoomMessages" style="background:rgba(0,0,0,0.2); border-radius:10px; padding:15px; min-height:300px; max-height:60vh; overflow-y:auto; margin-bottom:15px;">
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <input type="text" id="chatRoomInput" placeholder="输入消息..." style="flex:1; margin:0;" />
+                <button class="btn" onclick="sendChatRoomMessage()">发送</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="chatRoomTransferAmount" placeholder="转账金额" step="0.01" style="flex:1; margin:0;" />
+                <button class="btn btn-success" onclick="chatRoomTransfer()">💰 转账</button>
+            </div>
+        </div>
+        
+        <!-- 聊天会话列表 -->
+        <div id="chatListPage" class="shop-page">
+            <button class="back-btn" onclick="backToUser()">← 返回</button>
+            <h3 class="page-title">💬 我的聊天</h3>
+
+            <div class="add-notice-box" style="border-left:4px solid #2ecc71;">
+                <h4 style="color:#2ecc71;">➕ 添加好友 / 开始聊天</h4>
+                <input type="text" id="addFriendUsername" placeholder="输入对方用户名" />
+                <button class="btn btn-success" onclick="addFriendAndChat()" style="margin-top:10px;">添加并开始聊天</button>
+            </div>
+
+            <div style="color:#ffcc00; font-size:16px; margin-bottom:10px;">👥 最近联系人</div>
+            <div id="chatSessionList"></div>
+        </div>
+
+        <!-- 聊天室（通用） -->
+        <div id="chatRoomPage" class="shop-page">
+            <button class="back-btn" onclick="showChatList()">← 返回列表</button>
+            <h3 class="page-title" id="chatRoomTitle">💬 聊天</h3>
+            <div id="chatRoomMessages" style="background:rgba(0,0,0,0.2); border-radius:10px; padding:15px; min-height:300px; max-height:60vh; overflow-y:auto; margin-bottom:15px;">
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <input type="text" id="chatRoomInput" placeholder="输入消息..." style="flex:1; margin:0;" />
+                <button class="btn" onclick="sendChatRoomMessage()">发送</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="chatRoomTransferAmount" placeholder="转账金额" step="0.01" style="flex:1; margin:0;" />
+                <button class="btn btn-success" onclick="chatRoomTransfer()">💰 转账</button>
             </div>
         </div>
         <!-- 购买弹窗 -->
@@ -2215,6 +2278,258 @@ window.getVideoEmbedHtml = function(url) {
                 if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
             };
         })();
+
+        // ============================================================
+        // 独立聊天系统
+        // ============================================================
+        let chatListTimer = null;
+        let chatRoomTimer = null;
+        let currentChatRoomUser = null;
+
+        // 打开聊天列表
+        window.showChatList = async function() {
+            if (!currentUsername) { showToast('请先登录', 'error'); return; }
+            hideAll(); enterFull();
+            if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+            else document.getElementById('userPage').style.display = 'block';
+            document.getElementById('chatListPage').style.display = 'block';
+            await loadChatSessions();
+            // 每 5 秒刷新
+            if (chatListTimer) clearInterval(chatListTimer);
+            chatListTimer = setInterval(loadChatSessions, 5000);
+        };
+
+        // 加载会话列表（从消息中提取所有联系人）
+        window.loadChatSessions = async function() {
+            const box = document.getElementById('chatSessionList');
+            if (!box) return;
+            // 获取所有和我有关的消息
+            const { data: msgs } = await supabaseClient.from('chat_messages')
+                .select('*').or(`from_username.eq.${currentUsername},to_username.eq.${currentUsername}`);
+            
+            // 提取联系人
+            const contacts = new Set();
+            (msgs || []).forEach(m => {
+                if (m.from_username === currentUsername) contacts.add(m.to_username);
+                else contacts.add(m.from_username);
+            });
+
+            // 获取好友列表也加进去
+            const { data: friends } = await supabaseClient.from('chat_friends')
+                .select('*').or(`user_a.eq.${currentUsername},user_b.eq.${currentUsername}`);
+            (friends || []).forEach(f => {
+                contacts.add(f.user_a === currentUsername ? f.user_b : f.user_a);
+            });
+
+            // 从订单里提取买家和卖家
+            const { data: orders } = await supabaseClient.from('shop_orders')
+                .select('*').or(`buyer_username.eq.${currentUsername},seller_username.eq.${currentUsername}`);
+            (orders || []).forEach(o => {
+                if (o.buyer_username === currentUsername) contacts.add(o.seller_username);
+                else contacts.add(o.buyer_username);
+            });
+
+            if (contacts.size === 0) {
+                box.innerHTML = '<div class="notice-empty">暂无聊天记录，搜索用户名开始聊天吧</div>';
+                return;
+            }
+
+            // 获取所有用户信息
+            const { data: users } = await supabaseClient.from('app_users')
+                .select('username, nickname, role').in('username', Array.from(contacts));
+            const userMap = {};
+            (users || []).forEach(u => { userMap[u.username] = u; });
+
+            box.innerHTML = '';
+            for (const contact of contacts) {
+                const u = userMap[contact] || { username: contact, nickname: '', role: 'user' };
+                const display = u.role === 'admin' ? '👑 ' + (u.nickname || u.username) : (u.nickname || u.username);
+
+                // 找最后一条消息
+                const lastMsg = (msgs || []).filter(m =>
+                    (m.from_username === contact && m.to_username === currentUsername) ||
+                    (m.from_username === currentUsername && m.to_username === contact)
+                ).sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+                const preview = lastMsg 
+                    ? (lastMsg.msg_type === 'transfer' ? '💰 转账 ¥' + lastMsg.amount : (lastMsg.content || '').substring(0, 25))
+                    : '点击开始聊天';
+                const time = lastMsg && lastMsg.created_at ? new Date(lastMsg.created_at).toLocaleString() : '';
+
+                const card = document.createElement('div');
+                card.className = 'shop-card';
+                card.style.cursor = 'pointer';
+                card.onclick = () => openChatRoom(contact);
+                card.innerHTML = `
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:16px; font-weight:bold; margin-bottom:4px;">${escapeHtml(display)}</div>
+                        <div style="color:#aaa; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(preview)}</div>
+                    </div>
+                    <div style="color:#888; font-size:11px; white-space:nowrap;">${time}</div>
+                `;
+                box.appendChild(card);
+            }
+        };
+
+        // 添加好友并开始聊天
+        window.addFriendAndChat = async function() {
+            const uname = document.getElementById('addFriendUsername').value.trim();
+            if (!uname) { showToast('请输入用户名', 'error'); return; }
+            if (uname === currentUsername) { showToast('不能添加自己', 'error'); return; }
+
+            const { data: target } = await supabaseClient.from('app_users').select('username').eq('username', uname).maybeSingle();
+            if (!target) { showToast('用户不存在', 'error'); return; }
+
+            // 记录好友关系（双向存两条，或存一条）
+            const ua = currentUsername < uname ? currentUsername : uname;
+            const ub = currentUsername < uname ? uname : currentUsername;
+            const { data: exist } = await supabaseClient.from('chat_friends').select('id').eq('user_a', ua).eq('user_b', ub).maybeSingle();
+            if (!exist) {
+                await supabaseClient.from('chat_friends').insert([{ user_a: ua, user_b: ub }]);
+            }
+
+            document.getElementById('addFriendUsername').value = '';
+            showToast('✅ 已添加「' + uname + '」', 'success');
+            openChatRoom(uname);
+        };
+
+        // 打开聊天室
+        window.openChatRoom = async function(username) {
+            currentChatRoomUser = username;
+            hideAll(); enterFull();
+            if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+            else document.getElementById('userPage').style.display = 'block';
+            document.getElementById('chatRoomPage').style.display = 'block';
+
+            // 获取对方昵称
+            const { data: u } = await supabaseClient.from('app_users').select('username, nickname, role').eq('username', username).maybeSingle();
+            let display = username;
+            if (u) display = u.role === 'admin' ? '👑 ' + (u.nickname || u.username) : (u.nickname || u.username);
+            document.getElementById('chatRoomTitle').innerText = '💬 与 ' + display + ' 聊天';
+            document.getElementById('chatRoomInput').value = '';
+            document.getElementById('chatRoomTransferAmount').value = '';
+
+            await loadChatRoomMessages();
+            if (chatRoomTimer) clearInterval(chatRoomTimer);
+            chatRoomTimer = setInterval(loadChatRoomMessages, 3000);
+        };
+
+        window.backFromChatRoom = function() {
+            if (chatRoomTimer) { clearInterval(chatRoomTimer); chatRoomTimer = null; }
+            currentChatRoomUser = null;
+            showChatList();
+        };
+
+        // 加载聊天室消息
+        window.loadChatRoomMessages = async function() {
+            if (!currentChatRoomUser) return;
+            const box = document.getElementById('chatRoomMessages');
+            const { data, error } = await supabaseClient.from('chat_messages').select('*')
+                .or(`and(from_username.eq.${currentUsername},to_username.eq.${currentChatRoomUser}),and(from_username.eq.${currentChatRoomUser},to_username.eq.${currentUsername})`);
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">暂无消息，开始聊天吧</div>'; return; }
+            data.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+            box.innerHTML = '';
+            data.forEach(m => {
+                const isMe = m.from_username === currentUsername;
+                const time = m.created_at ? new Date(m.created_at).toLocaleString() : '';
+                const div = document.createElement('div');
+                div.style.cssText = `margin-bottom:12px; display:flex; ${isMe ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}`;
+                if (m.msg_type === 'transfer') {
+                    div.innerHTML = `<div style="max-width:70%; background:${isMe ? 'rgba(46,204,113,0.2)' : 'rgba(255,204,0,0.15)'}; padding:10px 14px; border-radius:10px; border:1px solid ${isMe ? '#2ecc71' : '#ffcc00'};">
+                        <div style="color:${isMe ? '#2ecc71' : '#ffcc00'}; font-weight:bold;">💰 转账 ¥${parseFloat(m.amount).toFixed(2)}</div>
+                        <div style="color:#888; font-size:11px; margin-top:4px;">${time}</div>
+                    </div>`;
+                } else {
+                    div.innerHTML = `<div style="max-width:70%; background:${isMe ? 'rgba(255,204,0,0.15)' : 'rgba(255,255,255,0.08)'}; padding:10px 14px; border-radius:10px;">
+                        <div style="color:#eee; word-break:break-word;">${escapeHtml(m.content)}</div>
+                        <div style="color:#888; font-size:11px; margin-top:4px;">${time}</div>
+                    </div>`;
+                }
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
+        };
+
+        // 发送消息
+        window.sendChatRoomMessage = async function() {
+            const inp = document.getElementById('chatRoomInput');
+            const content = inp.value.trim();
+            if (!content || !currentChatRoomUser) return;
+            const { error } = await supabaseClient.from('chat_messages').insert([{
+                from_username: currentUsername,
+                to_username: currentChatRoomUser,
+                content: content,
+                msg_type: 'text',
+                created_at: new Date().toISOString()
+            }]);
+            if (error) { showToast('发送失败：' + error.message, 'error'); return; }
+            inp.value = '';
+            await loadChatRoomMessages();
+        };
+
+        // 转账
+        window.chatRoomTransfer = async function() {
+            const amtStr = document.getElementById('chatRoomTransferAmount').value.trim();
+            const amount = parseFloat(amtStr);
+            if (!amount || amount <= 0) { showToast('请输入正确金额', 'error'); return; }
+            if (!currentChatRoomUser) return;
+
+            const { data: myWallet } = await supabaseClient.from('user_wallet').select('balance').eq('username', currentUsername).maybeSingle();
+            const myBal = myWallet ? parseFloat(myWallet.balance) : 0;
+            if (myBal < amount) { showToast('余额不足！当前余额：¥' + myBal.toFixed(2), 'error', 4000); return; }
+
+            if (!confirm(`确定向「${currentChatRoomUser}」转账 ¥${amount.toFixed(2)} 吗？`)) return;
+
+            await supabaseClient.from('user_wallet').update({ balance: myBal - amount, updated_at: new Date().toISOString() }).eq('username', currentUsername);
+            const { data: toWallet } = await supabaseClient.from('user_wallet').select('balance').eq('username', currentChatRoomUser).maybeSingle();
+            if (toWallet) {
+                await supabaseClient.from('user_wallet').update({ balance: parseFloat(toWallet.balance) + amount, updated_at: new Date().toISOString() }).eq('username', currentChatRoomUser);
+            } else {
+                await supabaseClient.from('user_wallet').insert([{ username: currentChatRoomUser, balance: amount }]);
+            }
+
+            await supabaseClient.from('wallet_transfers').insert([{
+                from_username: currentUsername, to_username: currentChatRoomUser,
+                amount: amount, created_at: new Date().toISOString()
+            }]);
+
+            await supabaseClient.from('chat_messages').insert([{
+                from_username: currentUsername, to_username: currentChatRoomUser,
+                content: '转账 ¥' + amount.toFixed(2),
+                msg_type: 'transfer', amount: amount,
+                created_at: new Date().toISOString()
+            }]);
+
+            currentBalance = myBal - amount;
+            const wb = document.getElementById('walletBalance');
+            if (wb) wb.innerText = '¥' + currentBalance.toFixed(2);
+            document.getElementById('chatRoomTransferAmount').value = '';
+            showToast('✅ 转账成功 ¥' + amount.toFixed(2), 'success');
+            await loadChatRoomMessages();
+        };
+
+        // 覆盖 hideAll，把新页面加进去
+        (function() {
+            const orig = window.hideAll;
+            window.hideAll = function() {
+                if (orig) orig();
+                ['chatListPage', 'chatRoomPage'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+                if (chatListTimer) { clearInterval(chatListTimer); chatListTimer = null; }
+                if (chatRoomTimer) { clearInterval(chatRoomTimer); chatRoomTimer = null; }
+            };
+        })();
+
+        // 覆盖 backFromChat（订单聊天的返回）
+        window.backFromChat = function() {
+            if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+            currentChatOrder = null;
+            currentChatWith = null;
+            showShop();
+        };
 
     </script>
 </body>
