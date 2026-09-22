@@ -257,6 +257,7 @@
                 <div class="menu-card" onclick="showStationPage()"><h3>🎫 在线购票</h3><p>选择站点和票种，快速下单</p></div>
                 <div class="menu-card" onclick="showMyOrder()"><h3>📦 我的订单</h3><p>查看历史购票记录</p></div>
                                 <div class="menu-card" onclick="showChatList()"><h3>💬 聊天</h3><p>和好友 / 客服聊天</p></div>
+                                <div class="menu-card" onclick="showGiftCardExchange()"><h3>🎁 礼品卡兑换</h3><p>输入卡密兑换余额</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 玩家论坛</h3><p>交流讨论，畅所欲言</p></div>
                                 <div class="menu-card" onclick="showShop()"><h3>🛒 电摇商城</h3><p>商家上架 / 用户购买</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称 / 注销账号</p></div>
@@ -378,6 +379,7 @@
                 <div class="menu-card" onclick="showNoticeManage()"><h3>📢 公告管理</h3><p>发布、编辑、删除网站公告</p></div>
                 <div class="menu-card" onclick="showBlacklistManage()"><h3>🚫 黑名单管理</h3><p>封禁/解禁用户</p></div>
                                 <div class="menu-card" onclick="showWalletManage()"><h3>💰 钱包充值</h3><p>线下收款后为用户充值</p></div>
+                                <div class="menu-card" onclick="showGiftCardManage()"><h3>🎁 礼品卡管理</h3><p>生成卡密、查看使用记录</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 论坛管理</h3><p>和谐违规帖子或评论</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称</p></div>
             </div>
@@ -487,6 +489,55 @@
             <div id="chatSessionList"></div>
         </div>
 
+        <!-- 用户：礼品卡兑换 -->
+        <div id="giftCardExchangePage" class="shop-page">
+            <button class="back-btn" onclick="backToUser()">← 返回</button>
+            <h3 class="page-title">🎁 礼品卡兑换</h3>
+            <div class="wallet-bar">
+                <span>💰 当前余额：<span class="wallet-balance" id="giftWalletBalance">¥0.00</span></span>
+            </div>
+            <div class="add-notice-box" style="border-left:4px solid #ffcc00;">
+                <h4 style="color:#ffcc00;">输入卡密</h4>
+                <input type="text" id="giftCardCode" placeholder="输入礼品卡卡密（如 GIFT-XXXX-XXXX）" style="text-transform:uppercase;" />
+                <button class="btn" onclick="redeemGiftCard()" style="margin-top:10px;">🎁 立即兑换</button>
+            </div>
+        </div>
+
+        <!-- 管理员：礼品卡管理 -->
+        <div id="giftCardManagePage" class="blacklist-page">
+            <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
+            <h3 class="page-title">🎁 礼品卡管理</h3>
+
+            <div class="add-notice-box" style="border-left:4px solid #2ecc71;">
+                <h4 style="color:#2ecc71;">➕ 生成礼品卡</h4>
+                <input type="number" id="giftAmount" placeholder="面额（元），如 10" step="0.01" />
+                <input type="number" id="giftCount" placeholder="生成数量，如 5" min="1" max="100" value="1" />
+                <button class="btn btn-success" onclick="generateGiftCards()" style="margin-top:10px;">生成卡密</button>
+            </div>
+
+            <div id="generatedCardsBox" style="margin-bottom:20px;"></div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                <span style="color:#aaa; font-size:14px;">共 <span id="giftCardCount">0</span> 张礼品卡</span>
+                <button class="btn btn-sm btn-outline" onclick="renderGiftCardManage()">⟳ 刷新列表</button>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>卡密</th>
+                            <th>面额</th>
+                            <th>状态</th>
+                            <th>使用者</th>
+                            <th>使用时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="giftCardTableBody"></tbody>
+                </table>
+            </div>
+        </div>
         <!-- 聊天室（通用） -->
         <div id="chatRoomPage" class="shop-page">
             <button class="back-btn" onclick="showChatList()">← 返回列表</button>
@@ -502,6 +553,7 @@
                 <button class="btn btn-success" onclick="chatRoomTransfer()">💰 转账</button>
             </div>
         </div>
+        
         <!-- 购买弹窗 -->
         <div id="buyModal" class="ban-modal">
             <div class="ban-modal-content" style="border-color:#2ecc71;">
@@ -2530,6 +2582,196 @@ window.getVideoEmbedHtml = function(url) {
             currentChatWith = null;
             showShop();
         };
+
+        // ============================================================
+        // 礼品卡系统
+        // ============================================================
+
+        // 生成随机卡密
+        function genCardCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = 'GIFT';
+            for (let i = 0; i < 3; i++) {
+                code += '-';
+                for (let j = 0; j < 4; j++) {
+                    code += chars[Math.floor(Math.random() * chars.length)];
+                }
+            }
+            return code;
+        }
+
+        // 用户：打开兑换页
+        window.showGiftCardExchange = async function() {
+            if (!currentUsername) { showToast('请先登录', 'error'); return; }
+            hideAll(); enterFull();
+            if (currentRole === 'admin') document.getElementById('adminPage').style.display = 'block';
+            else document.getElementById('userPage').style.display = 'block';
+            document.getElementById('giftCardExchangePage').style.display = 'block';
+            await loadWallet();
+            const gb = document.getElementById('giftWalletBalance');
+            if (gb) gb.innerText = '¥' + currentBalance.toFixed(2);
+            document.getElementById('giftCardCode').value = '';
+        };
+
+        // 用户：兑换卡密
+        window.redeemGiftCard = async function() {
+            const code = document.getElementById('giftCardCode').value.trim().toUpperCase();
+            if (!code) { showToast('请输入卡密', 'error'); return; }
+
+            // 查询卡密
+            const { data: card, error } = await supabaseClient.from('gift_cards').select('*').eq('code', code).maybeSingle();
+            if (error || !card) { showToast('❌ 卡密不存在', 'error'); return; }
+            if (card.is_used) { showToast('❌ 该卡密已被使用', 'error'); return; }
+
+            // 标记为已使用
+            const { error: upErr } = await supabaseClient.from('gift_cards').update({
+                is_used: true,
+                used_by: currentUsername,
+                used_at: new Date().toISOString()
+            }).eq('id', card.id).eq('is_used', false);
+
+            if (upErr) { showToast('兑换失败：' + upErr.message, 'error'); return; }
+
+            // 充值到余额
+            const amount = parseFloat(card.amount);
+            const { data: wallet } = await supabaseClient.from('user_wallet').select('*').eq('username', currentUsername).maybeSingle();
+            const oldBal = wallet ? parseFloat(wallet.balance) : 0;
+            const newBal = oldBal + amount;
+
+            if (wallet) {
+                await supabaseClient.from('user_wallet').update({ balance: newBal, updated_at: new Date().toISOString() }).eq('username', currentUsername);
+            } else {
+                await supabaseClient.from('user_wallet').insert([{ username: currentUsername, balance: newBal }]);
+            }
+
+            currentBalance = newBal;
+            const gb = document.getElementById('giftWalletBalance');
+            if (gb) gb.innerText = '¥' + newBal.toFixed(2);
+            document.getElementById('giftCardCode').value = '';
+            showToast('🎉 兑换成功！+¥' + amount.toFixed(2), 'success', 4000);
+        };
+
+        // 管理员：打开管理页
+        window.showGiftCardManage = async function() {
+            if (currentRole !== 'admin') { showToast('只有管理员能访问', 'error'); return; }
+            hideAll(); enterFull();
+            document.getElementById('adminPage').style.display = 'block';
+            document.getElementById('giftCardManagePage').style.display = 'block';
+            document.getElementById('generatedCardsBox').innerHTML = '';
+            await renderGiftCardManage();
+        };
+
+        // 管理员：生成礼品卡
+        window.generateGiftCards = async function() {
+            if (currentRole !== 'admin') return;
+            const amtStr = document.getElementById('giftAmount').value.trim();
+            const countStr = document.getElementById('giftCount').value.trim();
+            const amount = parseFloat(amtStr);
+            const count = parseInt(countStr) || 1;
+
+            if (!amount || amount <= 0) { showToast('请输入正确的面额', 'error'); return; }
+            if (count < 1 || count > 100) { showToast('数量必须在 1~100 之间', 'error'); return; }
+
+            const cards = [];
+            for (let i = 0; i < count; i++) {
+                cards.push({
+                    code: genCardCode(),
+                    amount: amount,
+                    is_used: false,
+                    created_by: currentUsername,
+                    created_at: new Date().toISOString()
+                });
+            }
+
+            const { data, error } = await supabaseClient.from('gift_cards').insert(cards).select();
+            if (error) { showToast('生成失败：' + error.message, 'error'); return; }
+
+            // 显示生成的卡密
+            const box = document.getElementById('generatedCardsBox');
+            const codes = (data || []).map(c => c.code);
+            box.innerHTML = `
+                <div class="add-notice-box" style="border-left:4px solid #ffcc00; background:rgba(255,204,0,0.08);">
+                    <h4 style="color:#ffcc00;">✅ 已生成 ${codes.length} 张礼品卡（面额 ¥${amount.toFixed(2)}）</h4>
+                    <textarea readonly style="min-height:100px; font-family:monospace; font-size:14px; background:#fff; color:#333;">${codes.join('\n')}</textarea>
+                    <button class="btn btn-sm" onclick="copyGeneratedCards()" style="margin-top:8px;">📋 复制全部卡密</button>
+                </div>
+            `;
+            box.dataset.codes = codes.join('\n');
+
+            document.getElementById('giftAmount').value = '';
+            document.getElementById('giftCount').value = '1';
+            showToast('✅ 成功生成 ' + codes.length + ' 张礼品卡', 'success');
+            await renderGiftCardManage();
+        };
+
+        window.copyGeneratedCards = function() {
+            const box = document.getElementById('generatedCardsBox');
+            const codes = box.dataset.codes || '';
+            if (!codes) return;
+            navigator.clipboard.writeText(codes).then(() => {
+                showToast('✅ 已复制到剪贴板', 'success');
+            }).catch(() => {
+                showToast('复制失败，请手动选择', 'error');
+            });
+        };
+
+        // 管理员：渲染礼品卡列表
+        window.renderGiftCardManage = async function() {
+            const tbody = document.getElementById('giftCardTableBody');
+            const countEl = document.getElementById('giftCardCount');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">加载中...</td></tr>';
+
+            const { data, error } = await supabaseClient.from('gift_cards').select('*').order('id', { ascending: false });
+            if (error) { tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">加载失败：' + error.message + '</td></tr>'; return; }
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-tip">暂无礼品卡</td></tr>';
+                if (countEl) countEl.textContent = '0';
+                return;
+            }
+            if (countEl) countEl.textContent = data.length;
+            tbody.innerHTML = '';
+            data.forEach(c => {
+                const status = c.is_used 
+                    ? '<span class="blacklist-badge badge-black">已使用</span>' 
+                    : '<span class="blacklist-badge badge-normal">未使用</span>';
+                const usedTime = c.used_at ? new Date(c.used_at).toLocaleString() : '-';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-family:monospace; font-size:13px;">${escapeHtml(c.code)}</td>
+                    <td style="color:#ffcc00; font-weight:bold;">¥${parseFloat(c.amount).toFixed(2)}</td>
+                    <td>${status}</td>
+                    <td>${escapeHtml(c.used_by || '-')}</td>
+                    <td style="font-size:12px; color:#888;">${usedTime}</td>
+                    <td>
+                        ${!c.is_used ? `<button class="btn btn-sm btn-danger" onclick="deleteGiftCard(${c.id})">删除</button>` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        // 管理员：删除未使用的礼品卡
+        window.deleteGiftCard = async function(id) {
+            if (currentRole !== 'admin') return;
+            if (!confirm('确定要删除这张未使用的礼品卡吗？')) return;
+            const { error } = await supabaseClient.from('gift_cards').delete().eq('id', id).eq('is_used', false);
+            if (error) { showToast('删除失败：' + error.message, 'error'); return; }
+            showToast('🗑️ 已删除', 'success');
+            await renderGiftCardManage();
+        };
+
+        // 覆盖 hideAll，加入礼品卡页面
+        (function() {
+            const orig = window.hideAll;
+            window.hideAll = function() {
+                if (orig) orig();
+                ['giftCardExchangePage', 'giftCardManagePage'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+            };
+        })();
 
     </script>
 </body>
