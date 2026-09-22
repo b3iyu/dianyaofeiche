@@ -380,6 +380,8 @@
                 <div class="menu-card" onclick="showBlacklistManage()"><h3>🚫 黑名单管理</h3><p>封禁/解禁用户</p></div>
                                 <div class="menu-card" onclick="showWalletManage()"><h3>💰 钱包充值</h3><p>线下收款后为用户充值</p></div>
                                 <div class="menu-card" onclick="showGiftCardManage()"><h3>🎁 礼品卡管理</h3><p>生成卡密、查看使用记录</p></div>
+                                <div class="menu-card" onclick="showTesterManage()"><h3>🧪 测试人员管理</h3><p>设置测试人员，开放测试内容</p></div>
+                                <div class="menu-card" id="testerMenuCard" style="display:none;" onclick="showTestZone()"><h3>🧪 测试专区</h3><p>100 个小游戏等你玩</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 论坛管理</h3><p>和谐违规帖子或评论</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称</p></div>
             </div>
@@ -512,6 +514,7 @@
                 <h4 style="color:#2ecc71;">➕ 生成礼品卡</h4>
                 <input type="number" id="giftAmount" placeholder="面额（元），如 10" step="0.01" />
                 <input type="number" id="giftCount" placeholder="生成数量，如 5" min="1" max="100" value="1" />
+                                <textarea id="giftCustomCodes" placeholder="（可选）自定义卡密，每行一个&#10;留空则自动生成随机卡密" style="min-height:80px; font-family:monospace;"></textarea>
                 <button class="btn btn-success" onclick="generateGiftCards()" style="margin-top:10px;">生成卡密</button>
             </div>
 
@@ -554,6 +557,46 @@
             </div>
         </div>
         
+        <!-- 测试人员管理（管理员） -->
+        <div id="testerManagePage" class="blacklist-page">
+            <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
+            <h3 class="page-title">🧪 测试人员管理</h3>
+            <p style="color:#aaa; font-size:14px; margin-bottom:15px;">测试人员登录后，会多出一个「测试专区」入口</p>
+            <div style="overflow-x:auto;">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>测试人员</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testerManageBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 测试专区（测试人员） -->
+        <div id="testZonePage" class="shop-page">
+            <button class="back-btn" onclick="backToUser()">← 返回</button>
+            <h3 class="page-title">🧪 测试专区 · 100 个小游戏</h3>
+            <p style="color:#aaa; font-size:13px; margin-bottom:20px;">🎮 这是只有测试人员才能看到的专区，所有游戏均来自公开网页游戏平台。</p>
+            <div id="gameList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px;"></div>
+        </div>
+
+        <!-- 游戏弹窗 -->
+        <div id="gameModal" class="ban-modal">
+            <div class="ban-modal-content" style="max-width:900px; width:100%; padding:20px; border-color:#ffcc00;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div class="ban-modal-title" style="color:#ffcc00; margin:0; font-size:20px;" id="gameTitle">🎮 游戏</div>
+                    <button class="btn btn-sm btn-danger" onclick="closeGameModal()">✕ 关闭</button>
+                </div>
+                <div id="gameContainer" style="width:100%; height:70vh; background:#000; border-radius:8px; overflow:hidden;">
+                    <iframe id="gameIframe" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
         <!-- 购买弹窗 -->
         <div id="buyModal" class="ban-modal">
             <div class="ban-modal-content" style="border-color:#2ecc71;">
@@ -2772,6 +2815,319 @@ window.getVideoEmbedHtml = function(url) {
                 });
             };
         })();
+
+        // ============================================================
+        // 测试人员 + 100 个小游戏
+        // ============================================================
+
+        // ---- 100 个小游戏列表 ----
+        const GAMES = [
+            { n: '2048', u: 'https://play2048.co/' },
+            { n: '贪吃蛇', u: 'https://playsnake.org/' },
+            { n: '俄罗斯方块', u: 'https://tetris.com/play-tetris' },
+            { n: '扫雷', u: 'https://minesweeper.online/' },
+            { n: '纸牌接龙', u: 'https://solitaired.com/' },
+            { n: '五子棋', u: 'https://www.mathsisfun.com/games/gomoku.html' },
+            { n: '国际象棋', u: 'https://www.chess.com/play/computer' },
+            { n: '象棋', u: 'https://www.xiangqi.com/' },
+            { n: '围棋', u: 'https://online-go.com/' },
+            { n: '跳棋', u: 'https://www.mathsisfun.com/games/checkers.html' },
+            { n: '数独', u: 'https://sudoku.com/' },
+            { n: '填字游戏', u: 'https://www.nytimes.com/crosswords' },
+            { n: '连连看', u: 'https://www.crazygames.com/game/onet-connect' },
+            { n: '消灭星星', u: 'https://www.crazygames.com/game/popstar' },
+            { n: '泡泡龙', u: 'https://www.crazygames.com/game/bubble-shooter' },
+            { n: '纸牌麻将', u: 'https://www.crazygames.com/game/mahjong' },
+            { n: '蜘蛛纸牌', u: 'https://www.crazygames.com/game/spider-solitaire' },
+            { n: '空当接龙', u: 'https://www.crazygames.com/game/freecell-solitaire' },
+            { n: '扑克牌', u: 'https://www.crazygames.com/game/solitaire' },
+            { n: '21点', u: 'https://www.crazygames.com/game/blackjack' },
+            { n: '弹球', u: 'https://www.crazygames.com/game/breakout' },
+            { n: '打砖块', u: 'https://www.crazygames.com/game/brick-breaker' },
+            { n: '俄罗斯方块 2', u: 'https://www.crazygames.com/game/tetris' },
+            { n: '跳一跳', u: 'https://www.crazygames.com/game/jump-jump' },
+            { n: '跑酷', u: 'https://www.crazygames.com/game/runner' },
+            { n: '赛车', u: 'https://www.crazygames.com/game/racing' },
+            { n: '摩托', u: 'https://www.crazygames.com/game/moto-x3m' },
+            { n: '自行车', u: 'https://www.crazygames.com/game/bike-race' },
+            { n: '飞机', u: 'https://www.crazygames.com/game/airplane' },
+            { n: '坦克', u: 'https://www.crazygames.com/game/tank' },
+            { n: '射击', u: 'https://www.crazygames.com/game/shooting' },
+            { n: '僵尸', u: 'https://www.crazygames.com/game/zombie' },
+            { n: '火柴人', u: 'https://www.crazygames.com/game/stickman' },
+            { n: '火柴人打架', u: 'https://www.crazygames.com/game/stick-fight' },
+            { n: '拳击', u: 'https://www.crazygames.com/game/boxing' },
+            { n: '摔跤', u: 'https://www.crazygames.com/game/wrestling' },
+            { n: '足球', u: 'https://www.crazygames.com/game/soccer' },
+            { n: '篮球', u: 'https://www.crazygames.com/game/basketball' },
+            { n: '台球', u: 'https://www.crazygames.com/game/8-ball-pool' },
+            { n: '保龄球', u: 'https://www.crazygames.com/game/bowling' },
+            { n: '乒乓球', u: 'https://www.crazygames.com/game/ping-pong' },
+            { n: '羽毛球', u: 'https://www.crazygames.com/game/badminton' },
+            { n: '网球', u: 'https://www.crazygames.com/game/tennis' },
+            { n: '高尔夫', u: 'https://www.crazygames.com/game/golf' },
+            { n: '雪地摩托', u: 'https://www.crazygames.com/game/snow-rider' },
+            { n: '滑板', u: 'https://www.crazygames.com/game/skate' },
+            { n: '滑雪', u: 'https://www.crazygames.com/game/ski' },
+            { n: '冲浪', u: 'https://www.crazygames.com/game/surf' },
+            { n: '潜水', u: 'https://www.crazygames.com/game/diving' },
+            { n: '钓鱼', u: 'https://www.crazygames.com/game/fishing' },
+            { n: '养鱼', u: 'https://www.crazygames.com/game/aquarium' },
+            { n: '农场', u: 'https://www.crazygames.com/game/farm' },
+            { n: '烹饪', u: 'https://www.crazygames.com/game/cooking' },
+            { n: '餐厅', u: 'https://www.crazygames.com/game/restaurant' },
+            { n: '咖啡店', u: 'https://www.crazygames.com/game/coffee' },
+            { n: '蛋糕店', u: 'https://www.crazygames.com/game/cake' },
+            { n: '冰淇淋', u: 'https://www.crazygames.com/game/ice-cream' },
+            { n: '披萨', u: 'https://www.crazygames.com/game/pizza' },
+            { n: '汉堡', u: 'https://www.crazygames.com/game/burger' },
+            { n: '寿司', u: 'https://www.crazygames.com/game/sushi' },
+            { n: '换装', u: 'https://www.crazygames.com/game/dress-up' },
+            { n: '化妆', u: 'https://www.crazygames.com/game/makeup' },
+            { n: '美甲', u: 'https://www.crazygames.com/game/nail' },
+            { n: '美发', u: 'https://www.crazygames.com/game/hair' },
+            { n: '宠物', u: 'https://www.crazygames.com/game/pet' },
+            { n: '养猫', u: 'https://www.crazygames.com/game/cat' },
+            { n: '养狗', u: 'https://www.crazygames.com/game/dog' },
+            { n: '动物园', u: 'https://www.crazygames.com/game/zoo' },
+            { n: '恐龙', u: 'https://www.crazygames.com/game/dinosaur' },
+            { n: '拼图', u: 'https://www.crazygames.com/game/jigsaw' },
+            { n: '找茬', u: 'https://www.crazygames.com/game/spot-the-difference' },
+            { n: '找物', u: 'https://www.crazygames.com/game/hidden-object' },
+            { n: '逃脱', u: 'https://www.crazygames.com/game/escape' },
+            { n: '密室', u: 'https://www.crazygames.com/game/room-escape' },
+            { n: '解谜', u: 'https://www.crazygames.com/game/puzzle' },
+            { n: '火柴人解谜', u: 'https://www.crazygames.com/game/stickman-puzzle' },
+            { n: '物理', u: 'https://www.crazygames.com/game/physics' },
+            { n: '积木', u: 'https://www.crazygames.com/game/blocks' },
+            { n: '叠叠乐', u: 'https://www.crazygames.com/game/tower' },
+            { n: '围棋 2', u: 'https://www.crazygames.com/game/go' },
+            { n: '国际跳棋', u: 'https://www.crazygames.com/game/checkers' },
+            { n: '双陆棋', u: 'https://www.crazygames.com/game/backgammon' },
+            { n: '军棋', u: 'https://www.crazygames.com/game/stratego' },
+            { n: '斗地主', u: 'https://www.crazygames.com/game/landlord' },
+            { n: '麻将 2', u: 'https://www.crazygames.com/game/mahjong-2' },
+            { n: '卡牌', u: 'https://www.crazygames.com/game/card' },
+            { n: '塔防', u: 'https://www.crazygames.com/game/tower-defense' },
+            { n: '策略', u: 'https://www.crazygames.com/game/strategy' },
+            { n: '战争', u: 'https://www.crazygames.com/game/war' },
+            { n: '帝国', u: 'https://www.crazygames.com/game/empire' },
+            { n: '文明', u: 'https://www.crazygames.com/game/civilization' },
+            { n: '三国', u: 'https://www.crazygames.com/game/three-kingdoms' },
+            { n: '三国杀', u: 'https://www.crazygames.com/game/sanguosha' },
+            { n: '西游', u: 'https://www.crazygames.com/game/journey-west' },
+            { n: '水浒', u: 'https://www.crazygames.com/game/water-margin' },
+            { n: '封神', u: 'https://www.crazygames.com/game/fengshen' },
+            { n: '仙侠', u: 'https://www.crazygames.com/game/xianxia' },
+            { n: '武侠', u: 'https://www.crazygames.com/game/wuxia' },
+            { n: '修仙', u: 'https://www.crazygames.com/game/cultivation' },
+            { n: '电摇飞车小游戏', u: 'https://www.crazygames.com/game/racing' }
+        ];
+
+        // ---- 显示测试专区 ----
+        window.showTestZone = function() {
+            if (!currentUsername) { showToast('请先登录', 'error'); return; }
+            hideAll(); enterFull();
+            document.getElementById('userPage').style.display = 'block';
+            document.getElementById('testZonePage').style.display = 'block';
+
+            const list = document.getElementById('gameList');
+            list.innerHTML = '';
+            GAMES.forEach((g, i) => {
+                const card = document.createElement('div');
+                card.className = 'shop-card';
+                card.style.cssText = 'flex-direction:column; text-align:center; cursor:pointer; padding:15px 10px; border-left-color:#2ecc71;';
+                card.onclick = () => openGame(i);
+                card.innerHTML = `
+                    <div style="font-size:32px; margin-bottom:6px;">🎮</div>
+                    <div style="font-size:13px; font-weight:bold; color:#fff; word-break:break-all;">${escapeHtml(g.n)}</div>
+                `;
+                list.appendChild(card);
+            });
+        };
+
+        window.openGame = function(idx) {
+            const g = GAMES[idx];
+            if (!g) return;
+            document.getElementById('gameTitle').innerText = '🎮 ' + g.n;
+            document.getElementById('gameIframe').src = g.u;
+            document.getElementById('gameModal').classList.add('show');
+        };
+
+        window.closeGameModal = function() {
+            document.getElementById('gameModal').classList.remove('show');
+            document.getElementById('gameIframe').src = 'about:blank';
+        };
+
+        // ---- 检查测试人员，显示菜单 ----
+        window.checkTesterStatus = async function() {
+            if (!currentUsername) return;
+            const { data } = await supabaseClient.from('app_users').select('is_tester').eq('username', currentUsername).maybeSingle();
+            const card = document.getElementById('testerMenuCard');
+            if (card) card.style.display = (data && data.is_tester) ? 'block' : 'none';
+        };
+
+        // ---- 管理员：测试人员管理 ----
+        window.showTesterManage = async function() {
+            if (currentRole !== 'admin') return;
+            hideAll(); enterFull();
+            document.getElementById('adminPage').style.display = 'block';
+            document.getElementById('testerManagePage').style.display = 'block';
+            await renderTesterManage();
+        };
+
+        window.renderTesterManage = async function() {
+            const tbody = document.getElementById('testerManageBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-tip">加载中...</td></tr>';
+            const { data, error } = await supabaseClient.from('app_users').select('id, username, role, nickname, is_tester').eq('role', 'user');
+            if (error) { tbody.innerHTML = '<tr><td colspan="4" class="empty-tip">加载失败：' + error.message + '</td></tr>'; return; }
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无普通用户</td></tr>'; return; }
+            data.sort((a, b) => a.id - b.id);
+            tbody.innerHTML = '';
+            data.forEach(u => {
+                const isT = u.is_tester;
+                const display = u.nickname ? `${u.nickname}（${u.username}）` : u.username;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(display)}</td>
+                    <td>普通用户</td>
+                    <td>${isT ? '<span class="blacklist-badge badge-normal">🧪 测试人员</span>' : '<span class="blacklist-badge badge-black">普通用户</span>'}</td>
+                    <td>
+                        <button class="btn btn-sm ${isT ? 'btn-danger' : 'btn-success'}" onclick="toggleTester(${u.id}, ${isT}, '${escapeHtml(u.username)}')">
+                            ${isT ? '取消测试权限' : '设为测试人员'}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.toggleTester = async function(userId, currentStatus, username) {
+            if (currentRole !== 'admin') return;
+            const newStatus = !currentStatus;
+            const action = newStatus ? '设为测试人员' : '取消测试权限';
+            if (!confirm(`确定要${action}「${username}」吗？`)) return;
+            const { error } = await supabaseClient.from('app_users').update({ is_tester: newStatus }).eq('id', userId);
+            if (error) { showToast('操作失败：' + error.message, 'error'); return; }
+            showToast(`✅ 已${action}`, 'success');
+            await renderTesterManage();
+        };
+
+        // ---- 覆盖 showShop 里的顺序，让菜单显示正确 ----
+        (function() {
+            const origShowShop = window.showShop;
+            window.showShop = async function() {
+                if (origShowShop) await origShowShop();
+                await checkTesterStatus();
+            };
+        })();
+
+        // ---- 覆盖 hideAll，加入新页面 ----
+        (function() {
+            const orig = window.hideAll;
+            window.hideAll = function() {
+                if (orig) orig();
+                ['testerManagePage', 'testZonePage'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+                const gm = document.getElementById('gameModal');
+                if (gm) gm.classList.remove('show');
+                const iframe = document.getElementById('gameIframe');
+                if (iframe) iframe.src = 'about:blank';
+            };
+        })();
+
+        // ---- 登录后自动检查测试人员状态 ----
+        (function() {
+            const origLogin = window.login;
+            window.login = async function() {
+                if (origLogin) await origLogin();
+                await checkTesterStatus();
+            };
+            const origCheck = window.checkSession;
+            window.checkSession = async function() {
+                if (origCheck) await origCheck();
+                await checkTesterStatus();
+            };
+        })();
+
+        // ============================================================
+        // 覆盖：支持自定义卡密
+        // ============================================================
+        window.generateGiftCards = async function() {
+            if (currentRole !== 'admin') return;
+            const amtStr = document.getElementById('giftAmount').value.trim();
+            const customCodes = (document.getElementById('giftCustomCodes')?.value || '').trim();
+            const countStr = document.getElementById('giftCount').value.trim();
+            const amount = parseFloat(amtStr);
+
+            if (!amount || amount <= 0) { showToast('请输入正确的面额', 'error'); return; }
+
+            let cards = [];
+
+            if (customCodes) {
+                // 🔑 使用自定义卡密（每行一个）
+                const codes = customCodes.split('\n').map(c => c.trim()).filter(c => c);
+                if (codes.length === 0) { showToast('请至少输入一个卡密', 'error'); return; }
+                // 检查是否有重复
+                const uniq = new Set(codes);
+                if (uniq.size !== codes.length) { showToast('输入的卡密有重复', 'error'); return; }
+
+                // 检查数据库里是否已存在
+                const { data: exist } = await supabaseClient.from('gift_cards').select('code').in('code', codes);
+                if (exist && exist.length > 0) {
+                    showToast('❌ 以下卡密已存在：' + exist.map(x => x.code).join(', '), 'error', 5000);
+                    return;
+                }
+
+                codes.forEach(c => {
+                    cards.push({
+                        code: c.toUpperCase(),
+                        amount: amount,
+                        is_used: false,
+                        created_by: currentUsername,
+                        created_at: new Date().toISOString()
+                    });
+                });
+            } else {
+                // 自动生成
+                const count = parseInt(countStr) || 1;
+                if (count < 1 || count > 100) { showToast('数量必须在 1~100 之间', 'error'); return; }
+                for (let i = 0; i < count; i++) {
+                    cards.push({
+                        code: genCardCode(),
+                        amount: amount,
+                        is_used: false,
+                        created_by: currentUsername,
+                        created_at: new Date().toISOString()
+                    });
+                }
+            }
+
+            const { data, error } = await supabaseClient.from('gift_cards').insert(cards).select();
+            if (error) { showToast('生成失败：' + error.message, 'error'); return; }
+
+            const box = document.getElementById('generatedCardsBox');
+            const codes = (data || []).map(c => c.code);
+            box.innerHTML = `
+                <div class="add-notice-box" style="border-left:4px solid #ffcc00; background:rgba(255,204,0,0.08);">
+                    <h4 style="color:#ffcc00;">✅ 已生成 ${codes.length} 张礼品卡（面额 ¥${amount.toFixed(2)}）</h4>
+                    <textarea readonly style="min-height:100px; font-family:monospace; font-size:14px; background:#fff; color:#333;">${codes.join('\n')}</textarea>
+                    <button class="btn btn-sm" onclick="copyGeneratedCards()" style="margin-top:8px;">📋 复制全部卡密</button>
+                </div>
+            `;
+            box.dataset.codes = codes.join('\n');
+
+            document.getElementById('giftAmount').value = '';
+            const cc = document.getElementById('giftCustomCodes');
+            if (cc) cc.value = '';
+            const gc = document.getElementById('giftCount');
+            if (gc) gc.value = '1';
+            showToast('✅ 成功生成 ' + codes.length + ' 张礼品卡', 'success');
+            await renderGiftCardManage();
+        };
 
     </script>
 </body>
