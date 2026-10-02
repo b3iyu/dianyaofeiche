@@ -3129,6 +3129,81 @@ window.getVideoEmbedHtml = function(url) {
             await renderGiftCardManage();
         };
 
+        // ============================================================
+        // 修复：测试人员菜单显示
+        // ============================================================
+
+        // 检查测试状态并显示菜单
+        async function checkTesterStatusAndShow() {
+            if (!currentUsername) return;
+            try {
+                const { data } = await supabaseClient
+                    .from('app_users')
+                    .select('is_tester, role')
+                    .eq('username', currentUsername)
+                    .maybeSingle();
+                
+                const card = document.getElementById('testerMenuCard');
+                if (!card) {
+                    console.warn('testerMenuCard 元素不存在');
+                    return;
+                }
+                
+                // 管理员和测试人员都能看到测试专区
+                if (data && (data.is_tester === true || data.role === 'admin')) {
+                    card.style.display = 'block';
+                    console.log('✅ 显示测试专区入口');
+                } else {
+                    card.style.display = 'none';
+                    console.log('❌ 隐藏测试专区入口');
+                }
+            } catch (e) {
+                console.error('检查测试状态失败:', e);
+            }
+        }
+
+        // 每次进入用户面板都检查
+        (function() {
+            const origShowShop = window.showShop;
+            window.showShop = async function() {
+                if (origShowShop) await origShowShop();
+                await checkTesterStatusAndShow();
+            };
+            
+            const origBackToUser = window.backToUser;
+            window.backToUser = function() {
+                if (origBackToUser) origBackToUser();
+                setTimeout(checkTesterStatusAndShow, 100);
+            };
+        })();
+
+        // 登录成功后检查
+        (function() {
+            const origLogin = window.login;
+            window.login = async function() {
+                if (origLogin) await origLogin();
+                await checkTesterStatusAndShow();
+            };
+        })();
+
+        // 会话检查后也检查
+        (function() {
+            const origCheck = window.checkSession;
+            window.checkSession = async function() {
+                if (origCheck) await origCheck();
+                await checkTesterStatusAndShow();
+            };
+        })();
+
+        // 页面加载后也检查一次
+        window.addEventListener('load', function() {
+            setTimeout(checkTesterStatusAndShow, 500);
+        });
+
+        // 暴露给全局
+        window.checkTesterStatusAndShow = checkTesterStatusAndShow;
+        window.checkTesterStatus = checkTesterStatusAndShow;
+
     </script>
 </body>
 </html>
