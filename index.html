@@ -3438,6 +3438,63 @@ window.getVideoEmbedHtml = function(url) {
             });
         };
 
+        // ============================================================
+        // 登录后隐藏申诉按钮 + 申诉页全屏
+        // ============================================================
+        (function() {
+            // 确保全屏样式存在
+            if (!document.getElementById('fullscreen-style-fix')) {
+                const style = document.createElement('style');
+                style.id = 'fullscreen-style-fix';
+                style.textContent = 'body.fullscreen header { display:none !important; }';
+                document.head.appendChild(style);
+            }
+
+            // 隐藏/显示所有申诉入口
+            function setAppealVisible(visible) {
+                document.querySelectorAll('[onclick="showAppeal()"]').forEach(el => {
+                    el.style.display = visible ? '' : 'none';
+                });
+            }
+
+            // 登录后隐藏申诉按钮
+            const origLogin = window.login;
+            window.login = async function() {
+                const r = origLogin ? await origLogin.apply(this, arguments) : undefined;
+                if (currentUsername) setAppealVisible(false);
+                return r;
+            };
+
+            // 恢复会话后也隐藏
+            const origCheck = window.checkSession;
+            window.checkSession = async function() {
+                const r = origCheck ? await origCheck.apply(this, arguments) : undefined;
+                if (currentUsername) setAppealVisible(false);
+                return r;
+            };
+
+            // 退出登录后恢复申诉按钮
+            const origLogout = window.logout;
+            window.logout = function() {
+                if (origLogout) origLogout.apply(this, arguments);
+                setAppealVisible(true);
+            };
+
+            // 申诉页全屏（隐藏导航栏）
+            const origShowAppeal = window.showAppeal;
+            window.showAppeal = function() {
+                document.body.classList.add('fullscreen');
+                if (origShowAppeal) return origShowAppeal.apply(this, arguments);
+            };
+
+            // 离开申诉页（返回首页等）时恢复导航栏
+            const origShowHome = window.showHome;
+            window.showHome = function() {
+                document.body.classList.remove('fullscreen');
+                if (origShowHome) return origShowHome.apply(this, arguments);
+            };
+        })();
+
         window.showAppeal = showAppeal;
         window.submitAppeal = submitAppeal;
         window.renderAppealManage = renderAppealManage;
