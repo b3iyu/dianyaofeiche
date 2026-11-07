@@ -211,8 +211,7 @@
         <div class="nav">
             <a onclick="showHome()">首页</a>
             <a onclick="showForum()">论坛</a>
-            <a onclick="showLogin()">登录</a>
-            <a onclick="showRegister()">注册</a>
+            <a onclick="showAppeal()">📮 申诉</a>
         </div>
     </header>
 
@@ -381,6 +380,7 @@
                                 <div class="menu-card" onclick="showWalletManage()"><h3>💰 钱包充值</h3><p>线下收款后为用户充值</p></div>
                                 <div class="menu-card" onclick="showGiftCardManage()"><h3>🎁 礼品卡管理</h3><p>生成卡密、查看使用记录</p></div>
                                 <div class="menu-card" onclick="showTesterManage()"><h3>🧪 测试人员管理</h3><p>设置测试人员，开放测试内容</p></div>
+                                <div class="menu-card" onclick="showAppealManage()"><h3>📮 申诉管理</h3><p>处理用户解封申诉</p></div>
                                 <div class="menu-card" id="testerMenuCard" style="display:none;" onclick="showTestZone()"><h3>🧪 测试专区</h3><p>100 个小游戏等你玩</p></div>
                 <div class="menu-card" onclick="showForum()"><h3>💬 论坛管理</h3><p>和谐违规帖子或评论</p></div>
                 <div class="menu-card" onclick="showProfile()"><h3>👤 个人信息</h3><p>设置昵称</p></div>
@@ -596,6 +596,30 @@
                     <iframe id="gameIframe" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
                 </div>
             </div>
+        </div>
+        
+        <!-- 账号申诉 -->
+        <div id="appealPage" class="shop-page">
+            <button class="back-btn" onclick="showHome()">← 返回首页</button>
+            <h3 class="page-title">📮 账号封禁申诉</h3>
+            <div class="add-notice-box" style="border-left:4px solid #ffcc00;">
+                <p style="color:#aaa; font-size:13px; margin-bottom:10px;">如果您的账号被误封，请填写以下信息提交申诉。管理员会尽快处理。</p>
+                <input type="text" id="appealUsername" placeholder="被封账号的用户名（必填）" />
+                <input type="text" id="appealContact" placeholder="联系方式（QQ/微信/手机号，选填）" />
+                <textarea id="appealReason" placeholder="申诉理由（必填，说明为什么您认为被封是错误的）" style="min-height:100px;"></textarea>
+                <button class="btn" onclick="submitAppeal()" style="margin-top:10px;">📤 提交申诉</button>
+            </div>
+        </div>
+
+        <!-- 管理员：申诉管理 -->
+        <div id="appealManagePage" class="blacklist-page">
+            <button class="back-btn" onclick="backToAdmin()">← 返回后台</button>
+            <h3 class="page-title">📮 申诉管理</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                <span style="color:#aaa; font-size:14px;">共 <span id="appealCount">0</span> 条申诉</span>
+                <button class="btn btn-sm btn-outline" onclick="renderAppealManage()">⟳ 刷新</button>
+            </div>
+            <div id="appealList"></div>
         </div>
         <!-- 购买弹窗 -->
         <div id="buyModal" class="ban-modal">
@@ -3203,6 +3227,220 @@ window.getVideoEmbedHtml = function(url) {
         // 暴露给全局
         window.checkTesterStatusAndShow = checkTesterStatusAndShow;
         window.checkTesterStatus = checkTesterStatusAndShow;
+
+        // ============================================================
+        // 申诉系统（无联系方式版）
+        // ============================================================
+        window.showAppeal = function() {
+            hideAll(); exitFull();
+            document.getElementById('appealPage').style.display = 'block';
+            document.getElementById('appealUsername').value = '';
+            document.getElementById('appealReason').value = '';
+        };
+
+        window.submitAppeal = async function() {
+            const username = document.getElementById('appealUsername').value.trim();
+            const reason = document.getElementById('appealReason').value.trim();
+
+            if (!username) { showToast('请输入被封账号的用户名', 'error'); return; }
+            if (!reason) { showToast('请填写申诉理由', 'error'); return; }
+
+            // 查账号是否存在
+            const { data: user } = await supabaseClient.from('app_users')
+                .select('username, is_blacklisted, ban_until')
+                .eq('username', username)
+                .maybeSingle();
+
+            if (!user) { showToast('❌ 该用户名不存在，请检查后重试', 'error'); return; }
+
+            // 判断是否被封（未封或已到期 → 自动跳过）
+            const isBanned = user.is_blacklisted && (!user.ban_until || new Date(user.ban_until) > new Date());
+            if (!isBanned) {
+                showToast('✅ 该账号当前未被封禁，无需申诉', 'success', 4000);
+                document.getElementById('appealUsername').value = '';
+                document.getElementById('appealReason').value = '';
+                return;
+            }
+
+            // 检查是否已有待处理申诉
+            const { data: exist } = await supabaseClient.from('ban_appeals')
+                .select('id').eq('username', username).eq('status', 'pending');
+            if (exist && exist.length > 0) {
+                showToast('该账号已有待处理的申诉，请耐心等待管理员处理', 'info', 4000);
+                return;
+            }
+
+            // 提交申诉
+            const { error } = await supabaseClient.from('ban_appeals').insert([{
+                username: username,
+                reason: reason,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            }]);
+
+            if (error) { showToast('提交失败：' + error.message, 'error'); return; }
+
+            showToast('✅ 申诉已提交，管理员会尽快处理', 'success', 4000);
+            document.getElementById('appealUsername').value = '';
+            document.getElementById('appealReason').value = '';
+        };
+
+        window.renderAppealManage = async function() {
+            const box = document.getElementById('appealList');
+            const countEl = document.getElementById('appealCount');
+            if (!box) return;
+            box.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+
+            const { data, error } = await supabaseClient.from('ban_appeals')
+                .select('*').order('id', { ascending: false });
+
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败：' + error.message + '</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无申诉</div>'; if (countEl) countEl.textContent = '0'; return; }
+            if (countEl) countEl.textContent = data.length;
+
+            box.innerHTML = '';
+            data.forEach(a => {
+                const statusMap = {
+                    'pending': '<span class="blacklist-badge" style="background:#ffcc00;color:#000;">⏳ 待处理</span>',
+                    'approved': '<span class="blacklist-badge badge-normal">✅ 已通过</span>',
+                    'rejected': '<span class="blacklist-badge badge-black">❌ 已拒绝</span>'
+                };
+                const time = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+                const card = document.createElement('div');
+                card.className = 'notice-item-manage';
+                card.style.flexDirection = 'column';
+                card.style.alignItems = 'stretch';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <span style="color:#ffcc00; font-weight:bold;">${escapeHtml(a.username)}</span>
+                            ${statusMap[a.status] || a.status}
+                        </div>
+                        <span style="color:#888; font-size:12px;">${time}</span>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:6px; margin-bottom:10px; color:#ddd; font-size:13px; white-space:pre-wrap;">📝 申诉理由：${escapeHtml(a.reason)}</div>
+                    ${a.admin_reply ? `<div style="background:rgba(255,107,107,0.1); padding:10px; border-radius:6px; margin-bottom:10px; color:#ffaaaa; font-size:13px;">💬 管理员回复：${escapeHtml(a.admin_reply)}</div>` : ''}
+                    ${a.status === 'pending' ? `
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn btn-sm btn-success" onclick="handleAppeal(${a.id}, 'approved', '${escapeHtml(a.username)}')">✅ 通过并解封</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectAppeal(${a.id})">❌ 拒绝</button>
+                        </div>
+                    ` : ''}
+                `;
+                box.appendChild(card);
+            });
+        };
+
+        window.showAppeal = showAppeal;
+        window.submitAppeal = submitAppeal;
+        window.renderAppealManage = renderAppealManage;
+
+        // ============================================================
+        // 申诉系统（无联系方式版）
+        // ============================================================
+        window.showAppeal = function() {
+            hideAll(); exitFull();
+            document.getElementById('appealPage').style.display = 'block';
+            document.getElementById('appealUsername').value = '';
+            document.getElementById('appealReason').value = '';
+        };
+
+        window.submitAppeal = async function() {
+            const username = document.getElementById('appealUsername').value.trim();
+            const reason = document.getElementById('appealReason').value.trim();
+
+            if (!username) { showToast('请输入被封账号的用户名', 'error'); return; }
+            if (!reason) { showToast('请填写申诉理由', 'error'); return; }
+
+            // 查账号是否存在
+            const { data: user } = await supabaseClient.from('app_users')
+                .select('username, is_blacklisted, ban_until')
+                .eq('username', username)
+                .maybeSingle();
+
+            if (!user) { showToast('❌ 该用户名不存在，请检查后重试', 'error'); return; }
+
+            // 判断是否被封（未封或已到期 → 自动跳过）
+            const isBanned = user.is_blacklisted && (!user.ban_until || new Date(user.ban_until) > new Date());
+            if (!isBanned) {
+                showToast('✅ 该账号当前未被封禁，无需申诉', 'success', 4000);
+                document.getElementById('appealUsername').value = '';
+                document.getElementById('appealReason').value = '';
+                return;
+            }
+
+            // 检查是否已有待处理申诉
+            const { data: exist } = await supabaseClient.from('ban_appeals')
+                .select('id').eq('username', username).eq('status', 'pending');
+            if (exist && exist.length > 0) {
+                showToast('该账号已有待处理的申诉，请耐心等待管理员处理', 'info', 4000);
+                return;
+            }
+
+            // 提交申诉
+            const { error } = await supabaseClient.from('ban_appeals').insert([{
+                username: username,
+                reason: reason,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            }]);
+
+            if (error) { showToast('提交失败：' + error.message, 'error'); return; }
+
+            showToast('✅ 申诉已提交，管理员会尽快处理', 'success', 4000);
+            document.getElementById('appealUsername').value = '';
+            document.getElementById('appealReason').value = '';
+        };
+
+        window.renderAppealManage = async function() {
+            const box = document.getElementById('appealList');
+            const countEl = document.getElementById('appealCount');
+            if (!box) return;
+            box.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+
+            const { data, error } = await supabaseClient.from('ban_appeals')
+                .select('*').order('id', { ascending: false });
+
+            if (error) { box.innerHTML = '<div class="notice-error">加载失败：' + error.message + '</div>'; return; }
+            if (!data || data.length === 0) { box.innerHTML = '<div class="notice-empty">暂无申诉</div>'; if (countEl) countEl.textContent = '0'; return; }
+            if (countEl) countEl.textContent = data.length;
+
+            box.innerHTML = '';
+            data.forEach(a => {
+                const statusMap = {
+                    'pending': '<span class="blacklist-badge" style="background:#ffcc00;color:#000;">⏳ 待处理</span>',
+                    'approved': '<span class="blacklist-badge badge-normal">✅ 已通过</span>',
+                    'rejected': '<span class="blacklist-badge badge-black">❌ 已拒绝</span>'
+                };
+                const time = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+                const card = document.createElement('div');
+                card.className = 'notice-item-manage';
+                card.style.flexDirection = 'column';
+                card.style.alignItems = 'stretch';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <span style="color:#ffcc00; font-weight:bold;">${escapeHtml(a.username)}</span>
+                            ${statusMap[a.status] || a.status}
+                        </div>
+                        <span style="color:#888; font-size:12px;">${time}</span>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:6px; margin-bottom:10px; color:#ddd; font-size:13px; white-space:pre-wrap;">📝 申诉理由：${escapeHtml(a.reason)}</div>
+                    ${a.admin_reply ? `<div style="background:rgba(255,107,107,0.1); padding:10px; border-radius:6px; margin-bottom:10px; color:#ffaaaa; font-size:13px;">💬 管理员回复：${escapeHtml(a.admin_reply)}</div>` : ''}
+                    ${a.status === 'pending' ? `
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn btn-sm btn-success" onclick="handleAppeal(${a.id}, 'approved', '${escapeHtml(a.username)}')">✅ 通过并解封</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectAppeal(${a.id})">❌ 拒绝</button>
+                        </div>
+                    ` : ''}
+                `;
+                box.appendChild(card);
+            });
+        };
+
+        window.showAppeal = showAppeal;
+        window.submitAppeal = submitAppeal;
+        window.renderAppealManage = renderAppealManage;
 
     </script>
 </body>
