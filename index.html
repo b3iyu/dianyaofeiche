@@ -3593,6 +3593,69 @@ window.getVideoEmbedHtml = function(url) {
             window.__scrollTop = scrollTop;
         })();
 
+        // ============================================================
+        // 修复：个人信息/子页面显示时，隐藏面板页，避免被挤到下面
+        // ============================================================
+        (function() {
+            // 个人信息：只显示 profilePage，不显示 userPage/adminPage
+            window.showProfile = function() {
+                hideAll();
+                document.body.classList.add('fullscreen');
+
+                document.getElementById('profilePage').style.display = 'block';
+                document.getElementById('profileUsername').innerText = currentUsername;
+                document.getElementById('profileNickname').innerText = currentNickname || '（未设置，显示用户名）';
+                document.getElementById('profileRole').innerText = currentRole === 'admin' ? '👑 管理员' : '普通用户';
+                document.getElementById('nicknameInput').value = currentNickname || '';
+
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            };
+
+            // 同理，其他子页面也只显示自己，不叠面板
+            var soloPages = [
+                { fn: 'showStationPage', id: 'stationPage' },
+                { fn: 'showTicketPage', id: 'ticketPage' },
+                { fn: 'showBuyPage', id: 'buyPage', arg: true },
+                { fn: 'showMyOrder', id: 'myOrderPage', custom: true },
+                { fn: 'showShop', id: 'shopPage', custom: true },
+                { fn: 'showChatList', id: 'chatListPage', custom: true },
+                { fn: 'showGiftCardExchange', id: 'giftCardExchangePage', custom: true },
+                { fn: 'showTestZone', id: 'testZonePage', custom: true },
+                { fn: 'showOrderList', id: 'orderListPage', custom: true },
+                { fn: 'showNoticeManage', id: 'noticeManagePage', custom: true },
+                { fn: 'showBlacklistManage', id: 'blacklistPage', custom: true },
+                { fn: 'showWalletManage', id: 'walletManagePage', custom: true },
+                { fn: 'showGiftCardManage', id: 'giftCardManagePage', custom: true },
+                { fn: 'showTesterManage', id: 'testerManagePage', custom: true },
+                { fn: 'showAppealManage', id: 'appealManagePage', custom: true },
+                { fn: 'showForum', id: 'forumPage', custom: true }
+            ];
+
+            // 只对"非自定义"的简单页面做统一处理（自定义的那些原函数已经处理好）
+            soloPages.forEach(function(p) {
+                if (p.custom) return; // 跳过自定义的，它们原函数已单独处理
+                var orig = window[p.fn];
+                if (typeof orig === 'function') {
+                    window[p.fn] = function(arg) {
+                        hideAll();
+                        document.body.classList.add('fullscreen');
+                        var el = document.getElementById(p.id);
+                        if (el) el.style.display = 'block';
+                        if (p.arg) {
+                            try { orig.call(this, arg); } catch(e) {}
+                        } else {
+                            try { orig.call(this); } catch(e) {}
+                        }
+                        window.scrollTo({ top: 0, behavior: 'instant' });
+                        document.documentElement.scrollTop = 0;
+                        document.body.scrollTop = 0;
+                    };
+                }
+            });
+        })();
+
     </script>
 </body>
 </html>
