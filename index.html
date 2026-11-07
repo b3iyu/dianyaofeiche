@@ -3786,6 +3786,107 @@ window.getVideoEmbedHtml = function(url) {
             console.log('[人机验证] 已加载');
         })();
 
+        // ============================================================
+        // 人机验证（隐蔽版：按钮文案不暴露）
+        // ============================================================
+        (function() {
+            function showAntiHumanModal() {
+                return new Promise(function(resolve) {
+                    var old = document.getElementById('antiHumanOverlay');
+                    if (old) old.remove();
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'antiHumanOverlay';
+                    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+                    overlay.innerHTML =
+                        '<div style="max-width:520px;width:100%;background:linear-gradient(135deg,#2a1a2e,#1a1a2e);border:2px solid #ff6b6b;border-radius:15px;padding:40px 30px;text-align:center;box-shadow:0 0 80px rgba(255,107,107,0.5);box-sizing:border-box;">' +
+                            '<div style="font-size:70px;margin-bottom:15px;">🤖</div>' +
+                            '<h2 style="color:#ff6b6b;font-size:26px;margin-bottom:15px;">人机验证</h2>' +
+                            '<p style="color:#fff;font-size:15px;margin-bottom:8px;">请耐心等待 <b style="color:#ffcc00;font-size:22px;">1 小时</b> 完成验证</p>' +
+                            '<div id="verifyCountdown" style="font-size:56px;color:#ffcc00;font-weight:bold;margin:25px 0 30px;font-family:monospace;letter-spacing:2px;">60:00</div>' +
+                            '<button id="verifyCancelBtn" style="width:100%;padding:16px;background:#2ecc71;color:#fff;border:none;border-radius:8px;font-size:17px;cursor:pointer;font-weight:bold;">返回</button>' +
+                        '</div>';
+                    document.body.appendChild(overlay);
+
+                    var remaining = 3600;
+                    var countdownEl = document.getElementById('verifyCountdown');
+                    var cancelBtn = document.getElementById('verifyCancelBtn');
+
+                    function updateDisplay() {
+                        var m = Math.floor(remaining / 60);
+                        var s = remaining % 60;
+                        countdownEl.innerText = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                    }
+                    updateDisplay();
+
+                    var timer = setInterval(function() {
+                        remaining--;
+                        updateDisplay();
+                        if (remaining <= 0) {
+                            clearInterval(timer);
+                            overlay.remove();
+                            banAsRobot();
+                            resolve(false);
+                        }
+                    }, 1000);
+
+                    cancelBtn.onclick = function() {
+                        clearInterval(timer);
+                        overlay.remove();
+                        if (window.showToast) window.showToast('✅ 验证通过', 'success');
+                        resolve(true);
+                    };
+                });
+            }
+
+            async function banAsRobot() {
+                try {
+                    await supabaseClient.from('app_users').update({
+                        is_blacklisted: true,
+                        ban_reason: '人机验证等待超时，判定为机器人',
+                        ban_until: null
+                    }).eq('username', currentUsername);
+                    localStorage.removeItem('dyfc_user');
+                    currentUsername = '';
+                    currentRole = 'user';
+                    location.reload();
+                } catch (e) { console.error('封号失败:', e); }
+            }
+
+            window.createProduct = async function() {
+                var nameEl = document.getElementById('prodName');
+                var descEl = document.getElementById('prodDesc');
+                var priceEl = document.getElementById('prodPrice');
+                if (!nameEl || !priceEl) { if (window.showToast) window.showToast('找不到上架表单', 'error'); return; }
+                var name = nameEl.value.trim();
+                var desc = descEl ? descEl.value.trim() : '';
+                var priceStr = priceEl.value.trim();
+                if (!name) { if (window.showToast) window.showToast('请输入商品名称', 'error'); return; }
+                var price = parseFloat(priceStr);
+                if (!price || price <= 0) { if (window.showToast) window.showToast('请输入正确的价格', 'error'); return; }
+
+                var passed = await showAntiHumanModal();
+                if (!passed) return;
+
+                var sellerName = currentNickname || currentUsername;
+                try {
+                    var res = await supabaseClient.from('shop_products').insert([{
+                        name: name, description: desc, price: price,
+                        seller_username: currentUsername,
+                        seller_display_name: sellerName,
+                        is_active: true,
+                        created_at: new Date().toISOString()
+                    }]);
+                    if (res.error) { if (window.showToast) window.showToast('上架失败：' + res.error.message, 'error'); return; }
+                    if (window.showToast) window.showToast('✅ 商品已上架！', 'success', 4000);
+                    if (window.switchShopTab) window.switchShopTab('mine');
+                } catch (e) { if (window.showToast) window.showToast('异常：' + e.message, 'error'); }
+            };
+
+            window.showAntiHumanModal = showAntiHumanModal;
+            window.banAsRobot = banAsRobot;
+        })();
+
     </script>
 </body>
 </html>
