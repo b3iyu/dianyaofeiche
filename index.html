@@ -4047,6 +4047,165 @@ window.getVideoEmbedHtml = function(url) {
             window.banAsRobot = banAsRobot;
         })();
 
+        // ============================================================
+        // 申诉管理（独立完整版，覆盖之前所有版本）
+        // ============================================================
+        (function() {
+            // 强制覆盖 showAppealManage
+            window.showAppealManage = async function() {
+                try {
+                    // 权限检查
+                    if (currentRole !== 'admin') {
+                        if (window.showToast) window.showToast('只有管理员能访问', 'error');
+                        return;
+                    }
+
+                    // 隐藏所有页面
+                    if (window.hideAll) window.hideAll();
+
+                    // 全屏
+                    document.body.classList.add('fullscreen');
+
+                    // 显示后台 + 申诉管理页
+                    var adminPage = document.getElementById('adminPage');
+                    if (adminPage) adminPage.style.display = 'block';
+
+                    var appealManagePage = document.getElementById('appealManagePage');
+                    if (!appealManagePage) {
+                        console.error('[申诉管理] 找不到 appealManagePage 元素！请检查 HTML 是否有这个 div');
+                        if (window.showToast) window.showToast('页面元素缺失，请刷新或联系开发者', 'error');
+                        return;
+                    }
+                    appealManagePage.style.display = 'block';
+
+                    // 滚到顶部
+                    window.scrollTo(0, 0);
+
+                    // 渲染申诉列表
+                    await window.renderAppealManage();
+
+                    console.log('[申诉管理] 打开成功');
+                } catch (e) {
+                    console.error('[申诉管理] 出错:', e);
+                    if (window.showToast) window.showToast('打开失败：' + e.message, 'error');
+                }
+            };
+
+            // 强制覆盖 renderAppealManage
+            window.renderAppealManage = async function() {
+                var box = document.getElementById('appealList');
+                var countEl = document.getElementById('appealCount');
+                if (!box) {
+                    console.error('[申诉管理] 找不到 appealList 元素');
+                    return;
+                }
+                box.innerHTML = '<div style="color:#aaa;">加载中...</div>';
+
+                try {
+                    var res = await supabaseClient.from('ban_appeals')
+                        .select('*').order('id', { ascending: false });
+
+                    if (res.error) {
+                        box.innerHTML = '<div class="notice-error">加载失败：' + res.error.message + '</div>';
+                        return;
+                    }
+
+                    var data = res.data;
+                    if (!data || data.length === 0) {
+                        box.innerHTML = '<div class="notice-empty">暂无申诉</div>';
+                        if (countEl) countEl.textContent = '0';
+                        return;
+                    }
+
+                    if (countEl) countEl.textContent = data.length;
+                    box.innerHTML = '';
+
+                    data.forEach(function(a) {
+                        var statusMap = {
+                            'pending': '<span class="blacklist-badge" style="background:#ffcc00;color:#000;">⏳ 待处理</span>',
+                            'approved': '<span class="blacklist-badge badge-normal">✅ 已通过</span>',
+                            'rejected': '<span class="blacklist-badge badge-black">❌ 已拒绝</span>'
+                        };
+                        var time = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+                        var card = document.createElement('div');
+                        card.className = 'notice-item-manage';
+                        card.style.flexDirection = 'column';
+                        card.style.alignItems = 'stretch';
+                        card.innerHTML =
+                            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">' +
+                                '<div>' +
+                                    '<span style="color:#ffcc00; font-weight:bold;">' + escapeHtml(a.username) + '</span> ' +
+                                    (statusMap[a.status] || a.status) +
+                                '</div>' +
+                                '<span style="color:#888; font-size:12px;">' + time + '</span>' +
+                            '</div>' +
+                            '<div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:6px; margin-bottom:10px; color:#ddd; font-size:13px; white-space:pre-wrap;">📝 申诉理由：' + escapeHtml(a.reason) + '</div>' +
+                            (a.admin_reply ? '<div style="background:rgba(255,107,107,0.1); padding:10px; border-radius:6px; margin-bottom:10px; color:#ffaaaa; font-size:13px;">💬 管理员回复：' + escapeHtml(a.admin_reply) + '</div>' : '') +
+                            (a.status === 'pending' ?
+                                '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
+                                    '<button class="btn btn-sm btn-success" onclick="handleAppeal(' + a.id + ', \'approved\', \'' + escapeHtml(a.username) + '\')">✅ 通过并解封</button>' +
+                                    '<button class="btn btn-sm btn-danger" onclick="rejectAppeal(' + a.id + ')">❌ 拒绝</button>' +
+                                '</div>' : '');
+                        box.appendChild(card);
+                    });
+                } catch (e) {
+                    console.error('[申诉管理] 渲染出错:', e);
+                    box.innerHTML = '<div class="notice-error">加载异常：' + e.message + '</div>';
+                }
+            };
+
+            // 强制覆盖 handleAppeal
+            window.handleAppeal = async function(appealId, status, username) {
+                if (currentRole !== 'admin') return;
+                if (!confirm('确定要通过申诉并解封「' + username + '」吗？')) return;
+
+                try {
+                    var r1 = await supabaseClient.from('ban_appeals').update({
+                        status: status,
+                        admin_reply: '申诉通过，已解封',
+                        handled_at: new Date().toISOString()
+                    }).eq('id', appealId);
+                    if (r1.error) { if (window.showToast) window.showToast('操作失败：' + r1.error.message, 'error'); return; }
+
+                    var r2 = await supabaseClient.from('app_users').update({
+                        is_blacklisted: false,
+                        ban_reason: null,
+                        ban_until: null
+                    }).eq('username', username);
+                    if (r2.error) { if (window.showToast) window.showToast('解封失败：' + r2.error.message, 'error'); return; }
+
+                    if (window.showToast) window.showToast('✅ 已通过申诉并解封', 'success');
+                    await window.renderAppealManage();
+                } catch (e) {
+                    console.error('[申诉管理] 处理出错:', e);
+                }
+            };
+
+            // 强制覆盖 rejectAppeal
+            window.rejectAppeal = async function(appealId) {
+                if (currentRole !== 'admin') return;
+                var reply = prompt('请输入拒绝原因（会显示给用户）：');
+                if (reply === null) return;
+                var trimmed = reply.trim();
+                if (!trimmed) { if (window.showToast) window.showToast('请填写拒绝原因', 'error'); return; }
+
+                try {
+                    var r = await supabaseClient.from('ban_appeals').update({
+                        status: 'rejected',
+                        admin_reply: trimmed,
+                        handled_at: new Date().toISOString()
+                    }).eq('id', appealId);
+                    if (r.error) { if (window.showToast) window.showToast('操作失败：' + r.error.message, 'error'); return; }
+                    if (window.showToast) window.showToast('已拒绝该申诉', 'info');
+                    await window.renderAppealManage();
+                } catch (e) {
+                    console.error('[申诉管理] 拒绝出错:', e);
+                }
+            };
+
+            console.log('[申诉管理] 已加载独立完整版');
+        })();
+
     </script>
 </body>
 </html>
