@@ -3887,6 +3887,166 @@ window.getVideoEmbedHtml = function(url) {
             window.banAsRobot = banAsRobot;
         })();
 
+        // ============================================================
+        // 人机验证（鼠标轨迹检测版）
+        // 直线移动 = 机器人，自然曲线 = 人类
+        // ============================================================
+        (function() {
+            function showAntiHumanModal() {
+                return new Promise(function(resolve) {
+                    var old = document.getElementById('antiHumanOverlay');
+                    if (old) old.remove();
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'antiHumanOverlay';
+                    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+                    overlay.innerHTML =
+                        '<div style="max-width:520px;width:100%;background:#1a1a2e;border:1px solid #333;border-radius:12px;padding:35px 30px;text-align:center;box-sizing:border-box;position:relative;">' +
+                            '<div style="font-size:48px;margin-bottom:12px;">🤖</div>' +
+                            '<h2 style="color:#ddd;font-size:22px;margin-bottom:12px;font-weight:normal;">人机验证</h2>' +
+                            '<p style="color:#aaa;font-size:14px;margin-bottom:6px;">请耐心等待 <b style="color:#ffcc00;font-size:18px;">1 小时</b> 完成验证</p>' +
+                            '<div id="verifyCountdown" style="font-size:48px;color:#ffcc00;font-weight:bold;margin:20px 0 25px;font-family:monospace;letter-spacing:2px;">60:00</div>' +
+                            '<button id="verifyCancelBtn" style="padding:6px 18px;background:#3a3a4a;color:#ccc;border:1px solid #555;border-radius:6px;font-size:13px;cursor:pointer;">返回</button>' +
+                        '</div>';
+                    document.body.appendChild(overlay);
+
+                    var remaining = 3600;
+                    var countdownEl = document.getElementById('verifyCountdown');
+                    var cancelBtn = document.getElementById('verifyCancelBtn');
+
+                    // ---- 鼠标轨迹追踪 ----
+                    var trail = [];          // 轨迹点 {x, y, t}
+                    var maxTrail = 60;       // 最多记录 60 个点
+                    var isRobotByTrail = false; // 是否判定为直线
+
+                    function onMouseMove(e) {
+                        trail.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+                        if (trail.length > maxTrail) trail.shift();
+                    }
+                    document.addEventListener('mousemove', onMouseMove);
+
+                    // 判断轨迹是否为直线
+                    // 方法：计算相邻点的方向，如果方向变化极小 → 直线
+                    function checkStraightness() {
+                        if (trail.length < 8) return false; // 点太少，无法判断
+
+                        // 计算所有相邻点连线的角度
+                        var angles = [];
+                        for (var i = 1; i < trail.length; i++) {
+                            var dx = trail[i].x - trail[i-1].x;
+                            var dy = trail[i].y - trail[i-1].y;
+                            var dist = Math.sqrt(dx*dx + dy*dy);
+                            if (dist < 2) continue; // 忽略微小移动
+                            angles.push(Math.atan2(dy, dx));
+                        }
+                        if (angles.length < 5) return false;
+
+                        // 计算角度的最大偏差（去重后）
+                        // 如果是直线，所有角度应该几乎相同
+                        var firstAngle = angles[0];
+                        var maxDeviation = 0;
+                        for (var j = 1; j < angles.length; j++) {
+                            var diff = Math.abs(angles[j] - firstAngle);
+                            // 处理角度环绕
+                            if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                            if (diff > maxDeviation) maxDeviation = diff;
+                        }
+
+                        // 角度偏差 < 0.05 弧度（约 3 度）→ 太直，判定为机器人
+                        return maxDeviation < 0.05;
+                    }
+
+                    function updateDisplay() {
+                        var m = Math.floor(remaining / 60);
+                        var s = remaining % 60;
+                        countdownEl.innerText = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                    }
+                    updateDisplay();
+
+                    var timer = setInterval(function() {
+                        remaining--;
+                        updateDisplay();
+                        if (remaining <= 0) {
+                            cleanup();
+                            banAsRobot();
+                            resolve(false);
+                        }
+                    }, 1000);
+
+                    function cleanup() {
+                        clearInterval(timer);
+                        document.removeEventListener('mousemove', onMouseMove);
+                        overlay.remove();
+                    }
+
+                    cancelBtn.onclick = function() {
+                        // 🔑 点返回时，先判断轨迹
+                        isRobotByTrail = checkStraightness();
+
+                        if (isRobotByTrail) {
+                            // 直线移动 → 判定为机器人 → 封号
+                            cleanup();
+                            banAsRobot();
+                            resolve(false);
+                            return;
+                        }
+
+                        // 自然曲线 → 人类 → 通过
+                        cleanup();
+                        if (window.showToast) window.showToast('✅ 验证通过', 'success');
+                        resolve(true);
+                    };
+                });
+            }
+
+            async function banAsRobot() {
+                try {
+                    await supabaseClient.from('app_users').update({
+                        is_blacklisted: true,
+                        ban_reason: '人机验证失败：鼠标轨迹为直线，判定为机器人',
+                        ban_until: null
+                    }).eq('username', currentUsername);
+                    localStorage.removeItem('dyfc_user');
+                    currentUsername = '';
+                    currentRole = 'user';
+                    location.reload();
+                } catch (e) { console.error('封号失败:', e); }
+            }
+
+            window.createProduct = async function() {
+                var nameEl = document.getElementById('prodName');
+                var descEl = document.getElementById('prodDesc');
+                var priceEl = document.getElementById('prodPrice');
+                if (!nameEl || !priceEl) { if (window.showToast) window.showToast('找不到上架表单', 'error'); return; }
+                var name = nameEl.value.trim();
+                var desc = descEl ? descEl.value.trim() : '';
+                var priceStr = priceEl.value.trim();
+                if (!name) { if (window.showToast) window.showToast('请输入商品名称', 'error'); return; }
+                var price = parseFloat(priceStr);
+                if (!price || price <= 0) { if (window.showToast) window.showToast('请输入正确的价格', 'error'); return; }
+
+                var passed = await showAntiHumanModal();
+                if (!passed) return;
+
+                var sellerName = currentNickname || currentUsername;
+                try {
+                    var res = await supabaseClient.from('shop_products').insert([{
+                        name: name, description: desc, price: price,
+                        seller_username: currentUsername,
+                        seller_display_name: sellerName,
+                        is_active: true,
+                        created_at: new Date().toISOString()
+                    }]);
+                    if (res.error) { if (window.showToast) window.showToast('上架失败：' + res.error.message, 'error'); return; }
+                    if (window.showToast) window.showToast('✅ 商品已上架！', 'success', 4000);
+                    if (window.switchShopTab) window.switchShopTab('mine');
+                } catch (e) { if (window.showToast) window.showToast('异常：' + e.message, 'error'); }
+            };
+
+            window.showAntiHumanModal = showAntiHumanModal;
+            window.banAsRobot = banAsRobot;
+        })();
+
     </script>
 </body>
 </html>
