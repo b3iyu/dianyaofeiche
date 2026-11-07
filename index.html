@@ -605,7 +605,6 @@
             <div class="add-notice-box" style="border-left:4px solid #ffcc00;">
                 <p style="color:#aaa; font-size:13px; margin-bottom:10px;">如果您的账号被误封，请填写以下信息提交申诉。管理员会尽快处理。</p>
                 <input type="text" id="appealUsername" placeholder="被封账号的用户名（必填）" />
-                <input type="text" id="appealContact" placeholder="联系方式（QQ/微信/手机号，选填）" />
                 <textarea id="appealReason" placeholder="申诉理由（必填，说明为什么您认为被封是错误的）" style="min-height:100px;"></textarea>
                 <button class="btn" onclick="submitAppeal()" style="margin-top:10px;">📤 提交申诉</button>
             </div>
@@ -3498,6 +3497,101 @@ window.getVideoEmbedHtml = function(url) {
         window.showAppeal = showAppeal;
         window.submitAppeal = submitAppeal;
         window.renderAppealManage = renderAppealManage;
+
+        // ============================================================
+        // 修复：申诉页卡在登录/其他页面底部
+        // ============================================================
+        (function() {
+            const origHideAll = window.hideAll;
+            window.hideAll = function() {
+                if (origHideAll) origHideAll.apply(this, arguments);
+                // 强制隐藏所有可能残留的页面
+                ['appealPage', 'appealManagePage'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+                // 恢复导航栏（防止从申诉页返回后还全屏）
+                document.body.classList.remove('fullscreen');
+            };
+        })();
+
+        // ============================================================
+        // 所有子页面全屏 + 打开时自动滚到顶部
+        // ============================================================
+        (function() {
+            // 统一：显示页面时滚到顶部
+            function scrollTop() {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            }
+
+            // 所有"打开子页面"的函数
+            var pageFns = [
+                'showLogin', 'showRegister', 'showForum', 'showAppeal',
+                'showProfile', 'showStationPage', 'showTicketPage', 'showBuyPage',
+                'showMyOrder', 'showShop', 'showChatList', 'showGiftCardExchange',
+                'showTestZone', 'showOrderList', 'showNoticeManage',
+                'showBlacklistManage', 'showWalletManage', 'showGiftCardManage',
+                'showTesterManage', 'showAppealManage'
+            ];
+
+            pageFns.forEach(function(fn) {
+                var orig = window[fn];
+                if (typeof orig === 'function') {
+                    window[fn] = function() {
+                        // 进入任何子页面 → 全屏（隐藏导航栏）
+                        document.body.classList.add('fullscreen');
+                        var r = orig.apply(this, arguments);
+                        scrollTop();
+                        return r;
+                    };
+                }
+            });
+
+            // 返回首页 / 返回个人中心 / 返回后台 → 恢复导航栏
+            ['showHome', 'backToUser', 'backToAdmin'].forEach(function(fn) {
+                var orig = window[fn];
+                if (typeof orig === 'function') {
+                    window[fn] = function() {
+                        var r = orig.apply(this, arguments);
+                        // 如果回到的是"面板/首页"这类聚合页，才恢复导航栏
+                        if (fn === 'showHome') {
+                            document.body.classList.remove('fullscreen');
+                        }
+                        // backToUser / backToAdmin 视作"回到面板"，恢复导航栏
+                        if (fn === 'backToUser' || fn === 'backToAdmin') {
+                            document.body.classList.remove('fullscreen');
+                        }
+                        scrollTop();
+                        return r;
+                    };
+                }
+            });
+
+            // 彻底隐藏所有页面（包括申诉等），避免卡在底下
+            var origHideAll = window.hideAll;
+            window.hideAll = function() {
+                if (origHideAll) origHideAll.apply(this, arguments);
+                var allPages = [
+                    'appealPage', 'appealManagePage',
+                    'profilePage', 'stationPage', 'ticketPage', 'buyPage',
+                    'orderSuccess', 'myOrderPage',
+                    'orderListPage', 'noticeManagePage', 'blacklistPage',
+                    'shopPage', 'walletManagePage', 'giftCardExchangePage', 'giftCardManagePage',
+                    'testerManagePage', 'testZonePage',
+                    'chatListPage', 'chatRoomPage', 'sellerOrdersPage',
+                    'forumPage', 'postDetailPage'
+                ];
+                allPages.forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+            };
+
+            // 暴露
+            window.__scrollTop = scrollTop;
+        })();
 
     </script>
 </body>
