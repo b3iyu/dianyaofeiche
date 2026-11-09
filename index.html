@@ -4206,6 +4206,220 @@ window.getVideoEmbedHtml = function(url) {
             console.log('[申诉管理] 已加载独立完整版');
         })();
 
+        // ============================================================
+        // 注册页：自动注入隐私政策勾选框
+        // ============================================================
+        (function() {
+            function injectAgreeBox() {
+                var regBox = document.querySelector('#register .register-box') || document.getElementById('register');
+                if (!regBox) return;
+                if (document.getElementById('agreeBox')) return;
+
+                var btn = regBox.querySelector('.submit-btn');
+                if (!btn) return;
+
+                var agreeBox = document.createElement('div');
+                agreeBox.id = 'agreeBox';
+                agreeBox.style.cssText = 'display:flex; align-items:flex-start; gap:8px; margin:10px 0 0; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px;';
+                agreeBox.innerHTML =
+                    '<input type="checkbox" id="agreePrivacy" style="width:18px; height:18px; margin:2px 0 0; flex-shrink:0; cursor:pointer;" />' +
+                    '<label for="agreePrivacy" style="color:#ccc; font-size:13px; line-height:1.6; cursor:pointer;">' +
+                        '我已阅读并同意 ' +
+                        '<a onclick="event.preventDefault();showPrivacyPreview()" style="color:#ffcc00; text-decoration:underline; cursor:pointer;">《电摇飞车隐私政策》</a>' +
+                    '</label>';
+
+                btn.parentNode.insertBefore(agreeBox, btn);
+            }
+
+            // 每次打开注册页时注入
+            var origShowRegister = window.showRegister;
+            if (typeof origShowRegister === 'function') {
+                window.showRegister = function() {
+                    var r = origShowRegister.apply(this, arguments);
+                    setTimeout(injectAgreeBox, 50);
+                    return r;
+                };
+            }
+
+            // 兜底轮询
+            setInterval(function() {
+                var reg = document.getElementById('register');
+                if (reg && reg.style.display !== 'none') {
+                    injectAgreeBox();
+                }
+            }, 800);
+        })();
+
+        // ============================================================
+        // 注册页预览隐私政策（弹窗）
+        // ============================================================
+        window.showPrivacyPreview = async function() {
+            var overlay = document.getElementById('privacyPreviewOverlay');
+            if (overlay) overlay.remove();
+
+            overlay = document.createElement('div');
+            overlay.id = 'privacyPreviewOverlay';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:999998;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+            overlay.innerHTML =
+                '<div style="max-width:700px;width:100%;max-height:85vh;background:#1a1a2e;border:1px solid #444;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;padding:15px 20px;border-bottom:1px solid #333;">' +
+                        '<h3 style="color:#ffcc00;margin:0;font-size:17px;">📜 电摇飞车隐私政策</h3>' +
+                        '<button onclick="document.getElementById(\'privacyPreviewOverlay\').remove()" style="background:#ff6b6b;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;">关闭</button>' +
+                    '</div>' +
+                    '<div id="privacyPreviewContent" style="padding:20px;overflow-y:auto;color:#ccc;font-size:13px;line-height:1.9;white-space:pre-wrap;">加载中...</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+
+            try {
+                var res = await supabaseClient.from('site_privacy').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle();
+                var el = document.getElementById('privacyPreviewContent');
+                if (res.error || !res.data) {
+                    el.innerHTML = '<div style="color:#ff6b6b;">⚠️ 隐私政策加载失败，请稍后重试</div>';
+                    return;
+                }
+                el.textContent = res.data.content;
+            } catch (e) {
+                var el2 = document.getElementById('privacyPreviewContent');
+                if (el2) el2.innerHTML = '<div style="color:#ff6b6b;">⚠️ 异常：' + e.message + '</div>';
+            }
+        };
+
+        // ============================================================
+        // 覆盖注册函数：必须勾选隐私政策
+        // ============================================================
+        (function() {
+            window.register = async function() {
+                var username = document.getElementById('regUsername').value.trim();
+                var pwd = document.getElementById('regPwd').value.trim();
+                var nickname = document.getElementById('regNickname').value.trim();
+                var errTip = document.getElementById('regError');
+                if (!errTip) return;
+                errTip.innerText = '';
+
+                if (!username || !pwd) { errTip.innerText = '用户名、密码不能为空'; return; }
+                if (pwd.length < 6) { errTip.innerText = '密码至少6位'; return; }
+
+                // 🔑 检查隐私政策勾选
+                var agree = document.getElementById('agreePrivacy');
+                if (!agree || !agree.checked) {
+                    errTip.innerText = '请先勾选同意《电摇飞车隐私政策》';
+                    return;
+                }
+
+                try {
+                    var hashPwd = await sha256(pwd);
+                    var res = await supabaseClient.from('app_users').insert([{
+                        username: username,
+                        password_hash: hashPwd,
+                        role: 'user',
+                        is_blacklisted: false,
+                        nickname: nickname || null
+                    }]);
+
+                    if (res.error) {
+                        if (res.error.code === '23505') errTip.innerText = '用户名已存在';
+                        else errTip.innerText = res.error.message;
+                        return;
+                    }
+
+                    if (window.showToast) window.showToast('🎉 注册成功，请登录', 'success');
+                    window.showLogin();
+                } catch (err) {
+                    errTip.innerText = '注册异常：' + err.message;
+                }
+            };
+        })();
+
+        // ============================================================
+        // 个人信息页：从后端读取隐私政策
+        // ============================================================
+        (function() {
+            var privacyCache = null;
+
+            async function loadPrivacyFromBackend() {
+                try {
+                    var res = await supabaseClient
+                        .from('site_privacy')
+                        .select('*')
+                        .order('updated_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+                    if (res.error) { console.warn('[隐私政策] 读取失败:', res.error); return null; }
+                    return res.data;
+                } catch (e) { console.warn('[隐私政策] 异常:', e); return null; }
+            }
+
+            async function injectPrivacy() {
+                var profilePage = document.getElementById('profilePage');
+                if (!profilePage) return;
+                if (document.getElementById('privacyBox')) return;
+
+                var box = profilePage.querySelector('.profile-box');
+                if (!box) return;
+
+                var privacyBox = document.createElement('div');
+                privacyBox.id = 'privacyBox';
+                privacyBox.style.cssText = 'margin-top:20px; background:rgba(0,0,0,0.2); border-radius:10px; padding:20px;';
+                privacyBox.innerHTML =
+                    '<div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" id="privacyHeader">' +
+                        '<h4 style="color:#2ecc71; margin:0;">🔒 电摇飞车隐私政策</h4>' +
+                        '<span id="privacyToggleIcon" style="color:#2ecc71; font-size:14px;">展开 ▼</span>' +
+                    '</div>' +
+                    '<div id="privacyContent" style="display:none; margin-top:15px; max-height:450px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:20px; border-radius:8px; color:#ccc; font-size:13px; line-height:1.9; white-space:pre-wrap;"></div>';
+                box.appendChild(privacyBox);
+
+                var header = document.getElementById('privacyHeader');
+                var contentEl = document.getElementById('privacyContent');
+                var icon = document.getElementById('privacyToggleIcon');
+
+                header.onclick = function() {
+                    if (contentEl.style.display === 'none') {
+                        contentEl.style.display = 'block';
+                        if (icon) icon.textContent = '收起 ▲';
+                    } else {
+                        contentEl.style.display = 'none';
+                        if (icon) icon.textContent = '展开 ▼';
+                    }
+                };
+
+                if (!privacyCache) {
+                    privacyCache = await loadPrivacyFromBackend();
+                }
+
+                if (!privacyCache) {
+                    contentEl.innerHTML = '<div style="color:#ff6b6b;">⚠️ 隐私政策加载失败，请稍后刷新重试</div>';
+                    return;
+                }
+
+                contentEl.textContent = privacyCache.content;
+            }
+
+            var origShowProfile = window.showProfile;
+            if (typeof origShowProfile === 'function') {
+                window.showProfile = function() {
+                    var r = origShowProfile.apply(this, arguments);
+                    setTimeout(injectPrivacy, 50);
+                    return r;
+                };
+            }
+
+            setInterval(function() {
+                var profilePage = document.getElementById('profilePage');
+                if (profilePage && profilePage.style.display !== 'none') {
+                    injectPrivacy();
+                }
+            }, 800);
+
+            window.reloadPrivacy = function() {
+                privacyCache = null;
+                var old = document.getElementById('privacyBox');
+                if (old) old.remove();
+                injectPrivacy();
+            };
+
+            console.log('[隐私政策] 已加载（后端模式）');
+        })();
+
     </script>
 </body>
 </html>
