@@ -4420,6 +4420,97 @@ window.getVideoEmbedHtml = function(url) {
             console.log('[隐私政策] 已加载（后端模式）');
         })();
 
+        // ============================================================
+        // 购票：学号限制为两位数
+        // ============================================================
+        (function() {
+            // 输入框限制：最多输入2位数字
+            function setupStudentInput() {
+                var inp = document.getElementById('buyerName');
+                if (!inp) return;
+                if (inp.dataset.studentLimited) return; // 已设置过
+                inp.dataset.studentLimited = '1';
+
+                inp.setAttribute('maxlength', '2');
+                inp.setAttribute('inputmode', 'numeric');
+                inp.setAttribute('placeholder', '请输入两位数（如 01、23）');
+
+                // 输入时只保留数字
+                inp.addEventListener('input', function() {
+                    var v = this.value.replace(/\D/g, '').slice(0, 2);
+                    this.value = v;
+                });
+            }
+
+            // 每次打开购票页时设置
+            var origShowBuyPage = window.showBuyPage;
+            if (typeof origShowBuyPage === 'function') {
+                window.showBuyPage = function(ticket) {
+                    var r = origShowBuyPage.apply(this, arguments);
+                    setTimeout(setupStudentInput, 50);
+                    return r;
+                };
+            }
+
+            // 兜底轮询
+            setInterval(function() {
+                var buyPage = document.getElementById('buyPage');
+                if (buyPage && buyPage.style.display !== 'none') {
+                    setupStudentInput();
+                }
+            }, 800);
+
+            // 覆盖 submitOrder：验证必须两位数字
+            window.submitOrder = async function() {
+                var inp = document.getElementById('buyerName');
+                if (!inp) return;
+                var buyerName = inp.value.trim();
+
+                // 🔑 必须是两位数字
+                if (!/^\d{2}$/.test(buyerName)) {
+                    if (window.showToast) window.showToast('学号必须是两位数字（如 01、23）', 'error', 4000);
+                    else alert('学号必须是两位数字（如 01、23）');
+                    inp.focus();
+                    return;
+                }
+
+                var orderNo = 'DYFC' + Date.now().toString().slice(-6) +
+                    Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+                var payload = {
+                    ticket: currentTicketType,
+                    name: buyerName,
+                    station: '公园路小学（东）',
+                    order_no: orderNo,
+                    username: currentUsername,
+                    created_at: new Date().toISOString()
+                };
+
+                try {
+                    var res = await supabaseClient.from('dyfc_orders').insert([payload]);
+                    if (res.error) {
+                        if (window.showToast) window.showToast('下单失败：' + res.error.message, 'error');
+                        return;
+                    }
+
+                    var orderNoEl = document.getElementById('orderNo');
+                    if (orderNoEl) orderNoEl.innerText = orderNo;
+                    inp.value = '';
+
+                    if (window.hideAll) window.hideAll();
+                    var up = document.getElementById('userPage');
+                    if (up) up.style.display = 'block';
+                    var os = document.getElementById('orderSuccess');
+                    if (os) os.style.display = 'block';
+                    if (window.showToast) window.showToast('✅ 购票成功！', 'success');
+                } catch (e) {
+                    if (window.showToast) window.showToast('下单异常：' + e.message, 'error');
+                }
+            };
+
+            console.log('[购票] 学号两位数限制已启用');
+        })();
+
     </script>
 </body>
 </html>
